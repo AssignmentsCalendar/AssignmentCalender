@@ -8,8 +8,8 @@ dotenv.config();
 
 export const tokenGrabber = new TokenGrabber();
 
-const listener = app.listen(process.env.PORT, () => {
-	logger.info("Server started on port " + listener.address());
+const listener = app.listen(process.env.PORT || 3000, () => {
+	logger.info(listener.address(), `Your app has started`);
 });
 
 tokenGrabber.on("ready", async () => {

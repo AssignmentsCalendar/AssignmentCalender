@@ -4,7 +4,7 @@ const loggerOptions: P.LoggerOptions = {
     level: "info",
     transport: {
         target: "pino-pretty",
-        options: {colorize: true, ignore: "pid,hostname", dateFormat: "yyyy-mm-dd HH:MM:ss"}
+        options: {colorize: true, ignore: "pid,hostname", translateTime: "SYS:HH:MM:ss Z"}
     }
 }
 
