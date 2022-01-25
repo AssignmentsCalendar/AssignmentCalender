@@ -2,7 +2,7 @@
     "compilerOptions": {
         "alwaysStrict": true,
         "declaration": true,
-        "sourceMap": true,
+        "sourceMap": false,
         "target": "ES6",
         "module": "ES2020",
         "allowSyntheticDefaultImports": true,
