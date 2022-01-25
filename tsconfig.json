@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "alwaysStrict": true,
+        "declaration": true,
+        "sourceMap": true,
+        "target": "ES6",
+        "module": "ES2020",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "outDir": "./dist",
+        "moduleResolution": "node",
+        "rootDir": "./src",
+        "lib": [
+            "ES6",
+            "dom",
+        ],
+    }
+}
