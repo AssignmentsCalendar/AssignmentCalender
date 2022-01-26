@@ -2,7 +2,7 @@ import ics from 'ics';
 import { logger } from '../config/pino.js';
 import fs from 'fs/promises';
 
-export function CreateCalender(assignments){
+export function CreateCalender(assignments: any[]){
     const events: ics.EventAttributes[] = assignments.map(assignment => {
         const dateData = assignment.DateDue.split(/[\/ :]/gm);
         
@@ -13,7 +13,6 @@ export function CreateCalender(assignments){
         // sanitise title and description
         let title = assignment.Title.replace(/(?:<.*?>|&.*?;)/gm, ' ');
         let description = assignment.LongDescription.replace(/(?:<.*?>|&.*?;)/gm, ' ');
-
         
         title.replace(/  /gm, ' ');
         description.replace(/  /gm, ' ');
@@ -25,7 +24,7 @@ export function CreateCalender(assignments){
             title: `${assignment.GroupName} - ${title}`,
             description: description,
             categories: [assignment.AssignmentType, assignment.GroupName],
-            calName: `${assignment.GroupName}`,
+            calName: `Assignments`,
         }
 
         return event;

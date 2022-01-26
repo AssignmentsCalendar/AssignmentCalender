@@ -73,7 +73,7 @@ export class TokenGrabber extends EventEmitter {
 
 			// take screenshot of error
 			try {
-				await this.page.screenshot({ path: `error_${retries}.png` });
+				await this.page.screenshot({ path: `public/errors/error_${retries}.png` });
 				await this.browser.close();
 			} catch {
 				logger.error("Failed to take screenshot");
@@ -92,7 +92,7 @@ export class TokenGrabber extends EventEmitter {
 	public login(): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				this.browser = await puppeteer.launch({ headless: true });
+				this.browser = await puppeteer.launch({ headless: true, args: ['--use-gl=egl'] });
 				this.page = await this.browser.newPage();
 
 				await this.page.goto(process.env.BASE_URL);
