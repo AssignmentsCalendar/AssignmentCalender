@@ -78,3 +78,5 @@ typings/
 dist/
 error_*.png
 public/
+
+*.env
