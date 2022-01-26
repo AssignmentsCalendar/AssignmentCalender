@@ -3,6 +3,7 @@ import { logger } from "../config/pino.js";
 import { EventEmitter } from "events";
 import dayjs from "dayjs";
 import fetch from "node-fetch";
+import fs from "fs/promises";
 
 export class TokenGrabber extends EventEmitter {
 	public token: string | boolean;
@@ -73,10 +74,11 @@ export class TokenGrabber extends EventEmitter {
 
 			// take screenshot of error
 			try {
-				await this.page.screenshot({ path: `public/errors/error_${retries}.png` });
+				await this.page.screenshot({ path: `./public/errors/error_${retries}.png` });
 				await this.browser.close();
-			} catch {
-				logger.error("Failed to take screenshot");
+			} catch(err) {
+				logger.error(err, "Failed to take screenshot");
+				await this.browser.close();
 			}
 
 			// retry
@@ -158,3 +160,5 @@ export class TokenGrabber extends EventEmitter {
 		});
 	}
 }
+
+fs.mkdir("./public/errors", {recursive: true}).catch(err => {});
