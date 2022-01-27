@@ -7,7 +7,7 @@ dotenv.config();
 
 export const tokenGrabber = new TokenGrabber();
 
-const listener = app.listen(Number(process.env.PORT) || 3000, "node2.serabusm.com" , () => {
+const listener = app.listen(Number(process.env.PORT) || 3000 , () => {
 	logger.info(listener.address(), `Your app has started`);
 });
 tokenGrabber.on("ready", async () => {
