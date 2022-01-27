@@ -13,11 +13,9 @@ export class TokenGrabber extends EventEmitter {
 		super();
 		this.token = "";
 		this.getToken();
-
 	}
 
-	public async getAssignments(retries=5): Promise<any> {
-		
+	public async getAssignments(retries = 5): Promise<any> {
 		try {
 			return await this.requestAssignments();
 		} catch (err) {
@@ -76,7 +74,7 @@ export class TokenGrabber extends EventEmitter {
 			try {
 				await this.page.screenshot({ path: `./public/errors/error_${retries}.png` });
 				await this.browser.close();
-			} catch(err) {
+			} catch (err) {
 				logger.error(err, "Failed to take screenshot");
 				await this.browser.close();
 			}
@@ -94,7 +92,7 @@ export class TokenGrabber extends EventEmitter {
 	public login(): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				this.browser = await puppeteer.launch({ headless: true, args: ['--use-gl=egl'] });
+				this.browser = await puppeteer.launch({ headless: true, args: ["--use-gl=egl"] });
 				this.page = await this.browser.newPage();
 
 				await this.page.goto(process.env.BASE_URL);
@@ -124,12 +122,12 @@ export class TokenGrabber extends EventEmitter {
 
 				// google password section
 				logger.info("Waiting for password input");
-				await this.page.waitForSelector('input#password.mCAa0e');
-				await this.page.waitForSelector("input#submit.MK9CEd.MVpUfe")
+				await this.page.waitForSelector("input#password.mCAa0e");
+				await this.page.waitForSelector("input#submit.MK9CEd.MVpUfe");
 				logger.info("Found password input, waiting 1 second");
 				await this.page.waitForTimeout(1000);
 				logger.trace("Wait complete, entering password");
-				await this.page.type('input#password.mCAa0e', process.env.PASSWORD);
+				await this.page.type("input#password.mCAa0e", process.env.PASSWORD);
 				await this.page.click("input#submit.MK9CEd.MVpUfe");
 				logger.info("Password entered and clicked login button");
 				await this.page.waitForNavigation();
@@ -161,4 +159,4 @@ export class TokenGrabber extends EventEmitter {
 	}
 }
 
-fs.mkdir("./public/errors", {recursive: true}).catch(err => {});
+fs.mkdir("./public/errors", { recursive: true }).catch((err) => {});

@@ -5,22 +5,20 @@ import { app } from "./api/express.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-
 export const tokenGrabber = new TokenGrabber();
 
-const listener = app.listen(process.env.PORT || 3000, () => {
+const listener = app.listen(Number(process.env.PORT) || 3000, "node2.serabusm.com" , () => {
 	logger.info(listener.address(), `Your app has started`);
 });
-
 tokenGrabber.on("ready", async () => {
 	// run loop every 5 minutes
-    loop();
+	loop();
 	setInterval(loop, 300000);
 });
 
 async function loop() {
-    logger.info("Generating New Calendar");
+	logger.info("Generating New Calendar");
 	const assignments = await tokenGrabber.getAssignments();
 	CreateCalender(assignments);
-    logger.info("New Calendar Generated");
+	logger.info("New Calendar Generated");
 }

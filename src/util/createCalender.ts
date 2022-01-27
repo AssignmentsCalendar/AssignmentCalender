@@ -1,42 +1,42 @@
-import ics from 'ics';
-import { logger } from '../config/pino.js';
-import fs from 'fs/promises';
+import ics from "ics";
+import { logger } from "../config/pino.js";
+import fs from "fs/promises";
 
-export function CreateCalender(assignments: any[]){
-    const events: ics.EventAttributes[] = assignments.map(assignment => {
-        const dateData = assignment.DateDue.split(/[\/ :]/gm);
-        
-        const year = Number(dateData[2]);
-        const month = Number(dateData[0]);
-        const day = Number(dateData[1]);
+export function CreateCalender(assignments: any[]) {
+	const events: ics.EventAttributes[] = assignments.map((assignment) => {
+		const dateData = assignment.DateDue.split(/[\/ :]/gm);
 
-        // sanitise title and description
-        let title = assignment.Title.replace(/(?:<.*?>|&.*?;)/gm, ' ');
-        let description = assignment.LongDescription.replace(/(?:<.*?>|&.*?;)/gm, ' ');
-        
-        title.replace(/  /gm, ' ');
-        description.replace(/  /gm, ' ');
+		const year = Number(dateData[2]);
+		const month = Number(dateData[0]);
+		const day = Number(dateData[1]);
 
-        logger.info("Creating event for: " + title);
-        const event: ics.EventAttributes = {
-            start: [year, month, day],
-            end: [year, month, day],
-            title: `${assignment.GroupName} - ${title}`,
-            description: description,
-            categories: [assignment.AssignmentType, assignment.GroupName],
-            calName: `Assignments`,
-        }
+		// sanitise title and description
+		let title = assignment.Title.replace(/(?:<.*?>|&.*?;)/gm, " ");
+		let description = assignment.LongDescription.replace(/(?:<.*?>|&.*?;)/gm, " ");
 
-        return event;
-    });
+		title.replace(/  /gm, " ");
+		description.replace(/  /gm, " ");
 
-    const {error, value} = ics.createEvents(events);
+		logger.info("Creating event for: " + title);
+		const event: ics.EventAttributes = {
+			start: [year, month, day],
+			end: [year, month, day],
+			title: `${assignment.GroupName} - ${title}`,
+			description: description,
+			categories: [assignment.AssignmentType, assignment.GroupName],
+			calName: `Assignments`
+		};
 
-    if (error) {
-        return logger.error(error);
-    }
+		return event;
+	});
 
-    fs.writeFile('./public/calendar.ics', value, 'utf8');
+	const { error, value } = ics.createEvents(events);
 
-    return value;
+	if (error) {
+		return logger.error(error);
+	}
+
+	fs.writeFile("./public/calendar.ics", value, "utf8");
+
+	return value;
 }
