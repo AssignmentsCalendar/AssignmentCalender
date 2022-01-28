@@ -80,16 +80,5 @@ error_*.png
 public/
 
 *.env
-docs/.nojekyll
-docs/index.html
-docs/modules.html
-docs/assets/highlight.css
-docs/assets/icons.css
-docs/assets/icons.png
-docs/assets/icons@2x.png
-docs/assets/main.js
-docs/assets/search.js
-docs/assets/style.css
-docs/assets/widgets.png
-docs/assets/widgets@2x.png
-docs/classes/TokenGrabber.html
+
+docs/
