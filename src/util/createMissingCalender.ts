@@ -11,8 +11,8 @@ export function CreateMissingCalender(assignments: any[]) {
 		const day = Number(dayjs().day() + 1);
 
 		// sanitise title and description
-		let title = assignment.Title.replace(/(?:<.*?>|&.*?;)/gm, " ");
-		let description = assignment.LongDescription.replace(/(?:<.*?>|&.*?;)/gm, " ");
+		let title = assignment.AssignmentTitle.replace(/(?:<.*?>|&.*?;)/gm, " ");
+		let description = assignment.AssignmentLongDescription//.replace(/(?:<.*?>|&.*?;)/gm, " ");
 
 		title.replace(/  /gm, " ");
 		description.replace(/  /gm, " ");
@@ -22,7 +22,8 @@ export function CreateMissingCalender(assignments: any[]) {
 			start: [year, month, day],
 			end: [year, month, day],
 			title: `${assignment.GroupName} - ${title}`,
-			description: description,
+			htmlContent: description,
+			// description: description,
 			categories: [assignment.AssignmentType, assignment.GroupName],
 			calName: `Missing Assignments`
 		};

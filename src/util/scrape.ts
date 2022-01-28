@@ -114,7 +114,7 @@ export class TokenGrabber extends EventEmitter {
 
 			// take screenshot of error
 			try {
-				await this.page.screenshot({ path: `./public/errors/error_${retries}.png` });
+				await this.page.screenshot({ path: `./public/errors/error_${dayjs().format("YYYY-MM-DD")}.png` });
 				await this.browser.close();
 			} catch (err) {
 				logger.error(err, "Failed to take screenshot");
