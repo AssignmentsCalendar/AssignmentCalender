@@ -3,6 +3,7 @@ import { logger } from "../config/pino.js";
 import { EventEmitter } from "events";
 import dayjs from "dayjs";
 import fetch from "node-fetch";
+import fs from "fs/promises";
 
 export class TokenGrabber extends EventEmitter {
 	public token: string | boolean;
@@ -12,11 +13,9 @@ export class TokenGrabber extends EventEmitter {
 		super();
 		this.token = "";
 		this.getToken();
-
 	}
 
-	public async getAssignments(retries=5): Promise<any> {
-		
+	public async getAssignments(retries = 5): Promise<any> {
 		try {
 			return await this.requestAssignments();
 		} catch (err) {
@@ -27,6 +26,22 @@ export class TokenGrabber extends EventEmitter {
 				await this.getAssignments(retries - 1);
 			} else {
 				logger.error("All attempts failed");
+				process.exit(1);
+			}
+		}
+	}
+
+	public async getMissing(retries = 5): Promise<any> {
+		try {
+			return await this.requestMissing();
+		} catch (err) {
+			logger.error("Failed to get missing assignments, grabbing token again and retrying...");
+
+			if (retries > 0) {
+				await this.getToken();
+				await this.getMissing(retries - 1);
+			} else {
+				logger.fatal("All attempts failed");
 				process.exit(1);
 			}
 		}
@@ -50,7 +65,33 @@ export class TokenGrabber extends EventEmitter {
 		});
 	}
 
-	public async generateUrl() {
+	public requestMissing(): Promise<any> {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const url = this.generateMissingUrl();
+				const response = await fetch(url);
+				const json: any = await response.json();
+
+				if (json.ErrorType) {
+					reject(json.ErrorType);
+				}
+
+				resolve(json);
+			} catch (err) {
+				reject(err);
+			}
+		});
+	}
+
+	public generateMissingUrl() {
+		const baseUrl = `${process.env.BASE_URL}/api/DataDirect/StudentMissingAssignmentList`;
+		const studentId = process.env.STUDENT_ID;
+		const t = this.token;
+
+		return `${baseUrl}?studentId=${studentId}&t=${t}`;
+	}
+
+	public generateUrl() {
 		const baseUrl = `${process.env.BASE_URL}/api/mycalendar/assignments`;
 		const startDate = dayjs().format("MM/DD/YYYY");
 		const endDate = dayjs().add(3, "month").format("MM/DD/YYYY");
@@ -73,10 +114,11 @@ export class TokenGrabber extends EventEmitter {
 
 			// take screenshot of error
 			try {
-				await this.page.screenshot({ path: `error_${retries}.png` });
+				await this.page.screenshot({ path: `./public/errors/error_${dayjs().format("YYYY-MM-DD")}.png` });
 				await this.browser.close();
-			} catch {
-				logger.error("Failed to take screenshot");
+			} catch (err) {
+				logger.error(err, "Failed to take screenshot");
+				await this.browser.close();
 			}
 
 			// retry
@@ -92,7 +134,7 @@ export class TokenGrabber extends EventEmitter {
 	public login(): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				this.browser = await puppeteer.launch({ headless: true, args: ['--use-gl=egl'] });
+				this.browser = await puppeteer.launch({ headless: true, args: ["--use-gl=egl"] });
 				this.page = await this.browser.newPage();
 
 				await this.page.goto(process.env.BASE_URL);
@@ -122,12 +164,12 @@ export class TokenGrabber extends EventEmitter {
 
 				// google password section
 				logger.info("Waiting for password input");
-				await this.page.waitForSelector('input#password.mCAa0e');
-				await this.page.waitForSelector("input#submit.MK9CEd.MVpUfe")
+				await this.page.waitForSelector("input#password.mCAa0e");
+				await this.page.waitForSelector("input#submit.MK9CEd.MVpUfe");
 				logger.info("Found password input, waiting 1 second");
 				await this.page.waitForTimeout(1000);
 				logger.trace("Wait complete, entering password");
-				await this.page.type('input#password.mCAa0e', process.env.PASSWORD);
+				await this.page.type("input#password.mCAa0e", process.env.PASSWORD);
 				await this.page.click("input#submit.MK9CEd.MVpUfe");
 				logger.info("Password entered and clicked login button");
 				await this.page.waitForNavigation();
@@ -158,3 +200,5 @@ export class TokenGrabber extends EventEmitter {
 		});
 	}
 }
+
+fs.mkdir("./public/errors", { recursive: true }).catch((err) => {});
