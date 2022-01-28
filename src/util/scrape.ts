@@ -31,6 +31,22 @@ export class TokenGrabber extends EventEmitter {
 		}
 	}
 
+	public async getMissing(retries = 5): Promise<any> {
+		try {
+			return await this.requestMissing();
+		} catch (err) {
+			logger.error("Failed to get missing assignments, grabbing token again and retrying...");
+
+			if (retries > 0) {
+				await this.getToken();
+				await this.getMissing(retries - 1);
+			} else {
+				logger.fatal("All attempts failed");
+				process.exit(1);
+			}
+		}
+	}
+
 	public requestAssignments(): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
@@ -49,7 +65,33 @@ export class TokenGrabber extends EventEmitter {
 		});
 	}
 
-	public async generateUrl() {
+	public requestMissing(): Promise<any> {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const url = this.generateMissingUrl();
+				const response = await fetch(url);
+				const json: any = await response.json();
+
+				if (json.ErrorType) {
+					reject(json.ErrorType);
+				}
+
+				resolve(json);
+			} catch (err) {
+				reject(err);
+			}
+		});
+	}
+
+	public generateMissingUrl() {
+		const baseUrl = `${process.env.BASE_URL}/api/DataDirect/StudentMissingAssignmentList`;
+		const studentId = process.env.STUDENT_ID;
+		const t = this.token;
+
+		return `${baseUrl}?studentId=${studentId}&t=${t}`;
+	}
+
+	public generateUrl() {
 		const baseUrl = `${process.env.BASE_URL}/api/mycalendar/assignments`;
 		const startDate = dayjs().format("MM/DD/YYYY");
 		const endDate = dayjs().add(3, "month").format("MM/DD/YYYY");
