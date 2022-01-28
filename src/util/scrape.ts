@@ -2,8 +2,11 @@ import puppeteer from "puppeteer";
 import { logger } from "../config/pino.js";
 import { EventEmitter } from "events";
 import dayjs from "dayjs";
+import weekday from "dayjs/plugin/weekday.js";
 import fetch from "node-fetch";
 import fs from "fs/promises";
+
+dayjs.extend(weekday);
 
 export class TokenGrabber extends EventEmitter {
 	public token: string | boolean;
@@ -93,7 +96,7 @@ export class TokenGrabber extends EventEmitter {
 
 	public generateUrl() {
 		const baseUrl = `${process.env.BASE_URL}/api/mycalendar/assignments`;
-		const startDate = dayjs().format("MM/DD/YYYY");
+		const startDate = dayjs().weekday(0).format("MM/DD/YYYY");
 		const endDate = dayjs().add(3, "month").format("MM/DD/YYYY");
 		const t = this.token;
 

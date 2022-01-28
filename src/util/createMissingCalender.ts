@@ -8,7 +8,7 @@ export function CreateMissingCalender(assignments: any[]) {
 
 		const year = Number(dayjs().year());
 		const month = Number(dayjs().month() + 1);
-		const day = Number(dayjs().day() + 1);
+		const day = Number(dayjs().date());
 
 		// sanitise title and description
 		let title = assignment.AssignmentTitle.replace(/(?:<.*?>|&.*?;)/gm, " ");
