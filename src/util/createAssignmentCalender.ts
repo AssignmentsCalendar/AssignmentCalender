@@ -12,7 +12,7 @@ export function CreateCalender(assignments: any[]) {
 
 		// sanitise title and description
 		let title = assignment.Title.replace(/(?:<.*?>|&.*?;)/gm, " ");
-		let description = assignment.LongDescription//.replace(/(?:<.*?>|&.*?;)/gm, " ");
+		let description = assignment.LongDescription.replace(/(?:<.*?>|&.*?;)/gm, " ");
 
 		title.replace(/  /gm, " ");
 		description.replace(/  /gm, " ");
@@ -22,7 +22,7 @@ export function CreateCalender(assignments: any[]) {
 			start: [year, month, day],
 			end: [year, month, day],
 			title: `${assignment.GroupName} - ${title}`,
-			htmlContent: description,
+			description: description,
 			categories: [assignment.AssignmentType, assignment.GroupName],
 			calName: `Assignments`
 		};
