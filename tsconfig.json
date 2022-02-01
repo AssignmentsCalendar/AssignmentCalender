@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "strict": true,
         "alwaysStrict": true,
         "declaration": true,
         "sourceMap": true,
@@ -10,6 +11,9 @@
         "outDir": "./dist",
         "moduleResolution": "node",
         "rootDir": "./src",
+        "forceConsistentCasingInFileNames": true,
+        "listEmittedFiles": true,
+        "listFiles": true,
         "lib": [
             "ES6",
             "dom",

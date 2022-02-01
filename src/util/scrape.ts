@@ -10,8 +10,8 @@ dayjs.extend(weekday);
 
 export class TokenGrabber extends EventEmitter {
 	public token: string | boolean;
-	public browser: puppeteer.Browser;
-	public page: puppeteer.Page;
+	public browser: puppeteer.Browser | undefined;
+	public page: puppeteer.Page | undefined;
 	public constructor() {
 		super();
 		this.token = "";
@@ -117,11 +117,11 @@ export class TokenGrabber extends EventEmitter {
 
 			// take screenshot of error
 			try {
-				await this.page.screenshot({ path: `./public/errors/error_${dayjs().format("YYYY-MM-DD-HH-MM-SS")}.png` });
-				await this.browser.close();
+				await this.page?.screenshot({ path: `./public/errors/error_${dayjs().format("YYYY-MM-DD-HH-MM-SS")}.png` });
+				await this.browser?.close();
 			} catch (err) {
 				logger.error(err, "Failed to take screenshot");
-				await this.browser.close();
+				await this.browser?.close();
 			}
 
 			// retry
@@ -140,7 +140,7 @@ export class TokenGrabber extends EventEmitter {
 				this.browser = await puppeteer.launch({ headless: true, args: ["--use-gl=egl"] });
 				this.page = await this.browser.newPage();
 
-				await this.page.goto(process.env.BASE_URL);
+				await this.page.goto(process.env.BASE_URL || "");
 				logger.info("Connected to CORE");
 				await this.page.waitForNetworkIdle({ idleTime: 500, timeout: 30000 });
 
@@ -151,7 +151,7 @@ export class TokenGrabber extends EventEmitter {
 				logger.info("Found username input, waiting 1 second");
 				await this.page.waitForTimeout(1000);
 				logger.trace("Wait complete, entering username");
-				await this.page.type("#site-login-input .textfield INPUT", process.env.EMAIL);
+				await this.page.type("#site-login-input .textfield INPUT", process.env.EMAIL || "");
 				await this.page.click(".btn-primary");
 				logger.info("Username entered and clicked login button");
 				await this.page.waitForNavigation();
@@ -172,7 +172,7 @@ export class TokenGrabber extends EventEmitter {
 				logger.info("Found password input, waiting 1 second");
 				await this.page.waitForTimeout(1000);
 				logger.trace("Wait complete, entering password");
-				await this.page.type("input#password.mCAa0e", process.env.PASSWORD);
+				await this.page.type("input#password.mCAa0e", process.env.PASSWORD || "");
 				await this.page.click("input#submit.MK9CEd.MVpUfe");
 				logger.info("Password entered and clicked login button");
 				await this.page.waitForNavigation();

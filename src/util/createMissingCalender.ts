@@ -32,8 +32,12 @@ export function CreateMissingCalender(assignments: any[]) {
 
 	const { error, value } = ics.createEvents(events);
 
+	if (!value) {
+		return logger.error(error, "Error creating missing calender");
+	}
+
 	if (error) {
-		return logger.error(error);
+		return logger.error(error, "Error creating missing calender");
 	}
 
 	fs.writeFile("./public/calendar_missing.ics", value, "utf8");
