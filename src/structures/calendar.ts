@@ -38,7 +38,7 @@ export class Calendar {
 	}
 
 	public addEvent(event: ICalEventData) {
-		event.summary = event.summary?.replace(/<.*?>|&.*?;/gm, " ");
+		event.summary = event.summary?.replace(/[<&].*?[>;]/gm, " ");
 
 		// if event summary is a string remove non-breaking spaces
 		if (typeof event.summary === "string") {
