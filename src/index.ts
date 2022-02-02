@@ -5,6 +5,7 @@ import { Calendar } from "./structures/calendar.js";
 import dotenv from "dotenv";
 import dayjs from "dayjs";
 import { AssignmentDetails } from "./types/assignment.js";
+import cron from "node-cron";
 dotenv.config();
 
 
@@ -16,8 +17,16 @@ const listener = app.listen(Number(process.env.PORT) || 3000 , () => {
 tokenGrabber.on("ready", async () => {
 	// run loop every 10 minutes
 	createAssignmentCalendar();
-	setInterval(createAssignmentCalendar, 10 * 60 * 1000);
+	cron.schedule("*/10 * * * *", async () => {
+		createAssignmentCalendar();
+	});
 });
+
+cron.schedule("0 0 * * *", async () => {
+	logger.info("Performing Midnight Reboot");
+	process.exit(0);
+});
+
 
 async function createAssignmentCalendar() {
 	logger.info("Generating New Assignment Calendar");
