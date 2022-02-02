@@ -9,12 +9,14 @@ import cron from "node-cron";
 
 // @ts-expect-error
 import Cronitor from "cronitor";
+import { MissingAssignmentDetails } from "./types/missing.js";
 dotenv.config();
 
 export const cronitor = Cronitor();
 
-const calMonitor = new cronitor.Monitor('Create Calendars');
-const rebootMonitor = new cronitor.Monitor('Create Calendars');
+const calMonitor = new cronitor.Monitor('Create Assignment Calendar');
+const missingMonitor = new cronitor.Monitor('Create Missing Calendar');
+const rebootMonitor = new cronitor.Monitor('Perform Daily Reboot');
 
 
 const tokenGrabber = new TokenGrabber();
@@ -26,10 +28,18 @@ tokenGrabber.once("ready", async () => {
 	logger.trace("Ready event fired");
 	// run loop every 10 minutes
 	createAssignmentCalendar();
-	cron.schedule("*/1 * * * *", async () => {
+	createMissingCalendar();
+
+	cron.schedule("*/10 * * * *", async () => {
 		await calMonitor.ping({state: "run"})
-		createAssignmentCalendar();
+		await createAssignmentCalendar();
 		await calMonitor.ping({state: "complete"})
+	});
+
+	cron.schedule("*/10 * * * *", async () => {
+		await missingMonitor.ping({state: "run"})
+		await createMissingCalendar();
+		await missingMonitor.ping({state: "complete"})
 	});
 });
 
@@ -60,6 +70,28 @@ async function createAssignmentCalendar() {
 
 	await calendar.saveCalendar();
 	logger.info("Assignment Calendar Generated");
+}
+
+async function createMissingCalendar() {
+	logger.info("Generating New Missing Calendar");
+	const assignments: MissingAssignmentDetails[] = await tokenGrabber.getMissing();
+
+	const calendar = new Calendar();
+	calendar.setType("MISSING");
+	
+	assignments.map((assignment: MissingAssignmentDetails) => {
+		calendar.addEvent({
+			summary: assignment.AssignmentTitle,
+			description: assignment.AssignmentLongDescription,
+			id: assignment.AssignmentId,
+			start: dayjs(assignment.DateDue).toDate(),
+			priority: 9,
+			allDay: true,
+		});
+	});
+
+	await calendar.saveCalendar();
+	logger.info("Missing Calendar Generated");
 }
 
 // export * from every file
