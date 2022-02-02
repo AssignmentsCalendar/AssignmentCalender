@@ -8,7 +8,7 @@ import { AssignmentDetails } from "./types/assignment.js";
 dotenv.config();
 
 
-export const tokenGrabber = new TokenGrabber();
+const tokenGrabber = new TokenGrabber();
 
 const listener = app.listen(Number(process.env.PORT) || 3000 , () => {
 	logger.info(listener.address(), `Your app has started`);
@@ -39,3 +39,9 @@ async function createAssignmentCalendar() {
 	await calendar.saveCalendar();
 	logger.info("Assignment Calendar Generated");
 }
+
+// export * from every file
+export * from "./structures/scrape.js";
+export * from "./structures/calendar.js";
+export * from "./types/assignment.js";
+export * from "./types/calendar.js";
