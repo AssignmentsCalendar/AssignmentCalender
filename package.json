@@ -7,13 +7,14 @@
   "scripts": {
     "build": "tsc --build tsconfig.json",
     "build:watch": "tsc --build tsconfig.json --watch",
-    "build:release": "tsc --build tsconfig.release.json",
+    "build:release": "npm run clean && tsc --build tsconfig.release.json && npm run zip",
     "build:full": "npm run clean && tsc --build tsconfig.json",
     "clean": "rimraf dist && rimraf public",
     "start": "node dist/index.js",
     "start:dev": "npm run build:full && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "preversion": "npm run build:full && npx typedoc src"
+    "preversion": "npm run build:full && npx typedoc src",
+    "zip": "7z a -tzip dist.zip dist LICENSE .env.example package.json package-lock.json"
   },
   "keywords": [],
   "author": "",
