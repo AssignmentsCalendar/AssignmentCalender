@@ -6,7 +6,15 @@ import dotenv from "dotenv";
 import dayjs from "dayjs";
 import { AssignmentDetails } from "./types/assignment.js";
 import cron from "node-cron";
+
+// @ts-expect-error
+import Cronitor from "cronitor";
 dotenv.config();
+
+export const cronitor = Cronitor();
+
+const calMonitor = new cronitor.Monitor('Create Calendars');
+const rebootMonitor = new cronitor.Monitor('Create Calendars');
 
 
 const tokenGrabber = new TokenGrabber();
@@ -14,16 +22,21 @@ const tokenGrabber = new TokenGrabber();
 const listener = app.listen(Number(process.env.PORT) || 3000 , () => {
 	logger.info(listener.address(), `Your app has started`);
 });
-tokenGrabber.on("ready", async () => {
+tokenGrabber.once("ready", async () => {
+	logger.trace("Ready event fired");
 	// run loop every 10 minutes
 	createAssignmentCalendar();
-	cron.schedule("*/10 * * * *", async () => {
+	cron.schedule("*/1 * * * *", async () => {
+		await calMonitor.ping({state: "run"})
 		createAssignmentCalendar();
+		await calMonitor.ping({state: "complete"})
 	});
 });
 
 cron.schedule("0 0 * * *", async () => {
+	rebootMonitor.ping({state: "run"});
 	logger.info("Performing Midnight Reboot");
+	rebootMonitor.ping({state: "complete"});
 	process.exit(0);
 });
 

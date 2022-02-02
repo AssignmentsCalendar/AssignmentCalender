@@ -5,6 +5,8 @@ import dayjs from "dayjs";
 import weekday from "dayjs/plugin/weekday.js";
 import fetch from "node-fetch";
 import fs from "fs/promises";
+import { cronitor } from "../index.js"
+
 
 dayjs.extend(weekday);
 
@@ -12,6 +14,7 @@ export class TokenGrabber extends EventEmitter {
 	public token: string | boolean;
 	public browser: puppeteer.Browser | undefined;
 	public page: puppeteer.Page | undefined;
+	private monitor = new cronitor.Monitor("Get API Token");
 	public constructor() {
 		super();
 		this.token = "";
@@ -109,11 +112,14 @@ export class TokenGrabber extends EventEmitter {
 
 	public async getToken(retries = 5) {
 		try {
+			await this.monitor.ping({state: 'run'});
 			this.token = await this.login();
 			this.emit("ready", this.token);
+			await this.monitor.ping({state: 'complete'});
 			return this.token;
 		} catch (err) {
 			logger.error(err, "Failed to get token, retrying...");
+			await this.monitor.ping({state: 'fail'});
 
 			// take screenshot of error
 			try {

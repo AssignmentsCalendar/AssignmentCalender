@@ -45,7 +45,7 @@ export class Calendar {
 			event.summary = event.summary.replace(/&#.*?;/gm, " ");
 		}
 
-		logger.info(`Adding event to calendar: ${event.summary}`);
+		logger.trace(`Adding event to calendar: ${event.summary}`);
 		this.calendar.createEvent(event);
 		return this.calendar.events();
 	}
