@@ -189,7 +189,7 @@ export class TokenGrabber extends EventEmitter {
 					await this.page.waitForTimeout(1000);
 				}
 
-				if (attempts === 30) {
+				if (attempts >= 30) {
 					reject("login failed");
 				}
 

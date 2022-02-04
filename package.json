@@ -14,7 +14,8 @@
     "start:dev": "npm run build:full && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "preversion": "npm run build:full && npx typedoc src",
-    "zip": "7z a -tzip dist.zip dist LICENSE .env.example package.json package-lock.json"
+    "zip": "7z a -tzip dist.zip dist LICENSE .env.example package.json package-lock.json",
+    "generateDatabase": "rimraf C:\\codeql-home\\databases\\AssignmentCalendar && codeql database create --language=javascript --source-root ./src C:\\codeql-home\\databases\\AssignmentCalendar"
   },
   "keywords": [],
   "author": "",
