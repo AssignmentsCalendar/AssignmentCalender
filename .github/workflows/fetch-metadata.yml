@@ -19,4 +19,4 @@ jobs:
       # The following properties are now available:
       #  - steps.metadata.outputs.dependency-names
       #  - steps.metadata.outputs.dependency-type
-      #  - steps.metadata.outputs.update-type     
+      #  - steps.metadata.outputs.update-type
