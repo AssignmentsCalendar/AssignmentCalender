@@ -5,9 +5,13 @@ import dayjs from "dayjs";
 import weekday from "dayjs/plugin/weekday.js";
 import fetch from "node-fetch";
 import fs from "fs/promises";
-import { AssignmentDetails, cronitor, MissingAssignmentDetails, ScheduleDetails } from "../index.js"
+import {
+	AssignmentDetails,
+	cronitor,
+	MissingAssignmentDetails,
+	ScheduleDetails
+} from "../index.js";
 import { RequestedList } from "../types/scraper.js";
-
 
 dayjs.extend(weekday);
 
@@ -73,11 +77,11 @@ export class TokenGrabber extends EventEmitter {
 	public requestList(type: keyof typeof RequestedList): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				let url:string = "";
+				let url: string = "";
 
 				switch (type) {
 					case "ASSIGNMENTS":
-						let url = this.generateAssignmentUrl();
+						url = this.generateAssignmentUrl();
 						break;
 					case "SCHEDULE":
 						url = this.generateScheduleUrl();
@@ -90,10 +94,10 @@ export class TokenGrabber extends EventEmitter {
 				}
 
 				const response = await fetch(url);
-				const json = await response.json() as any;
+				const json = (await response.json()) as any;
 
 				if (json.ErrorType) {
-					reject(json.ErrorType);
+					reject(json);
 				}
 
 				resolve(json);
@@ -121,7 +125,7 @@ export class TokenGrabber extends EventEmitter {
 			"5023647_17002_89246320_4,5023647_17002_89246332_4,5023647_17002_89246344_4,5023647_17002_89277107_4,5023647_17002_89246379_4,5023647_17002_89246418_4,5023647_17002_89246530_4,5023647_17002_89277049_4,5023647_17002_89277101_4";
 		const recentSave = false;
 
-		return `${baseUrl}?startDate=${startDate}&endDate=${endDate}&t=${t}&filterString=${filterString}&recentSave=${recentSave}`;
+		return `${baseUrl}?t=${t}&startDate=${startDate}&endDate=${endDate}&filterString=${filterString}&recentSave=${recentSave}`;
 	}
 
 	public generateScheduleUrl() {
@@ -130,25 +134,27 @@ export class TokenGrabber extends EventEmitter {
 		const endDate = dayjs().add(3, "month").format("MM/DD/YYYY");
 		const t = this.token;
 
-		const scheduleString = "5023647_2"
+		const scheduleString = "5023647_2";
 		const recentSave = false;
 		return `${baseUrl}?startDate=${startDate}&endDate=${endDate}&t=${t}&scheduleString=${scheduleString}&recentSave=${recentSave}`;
 	}
 
 	public async getToken(retries = 5) {
 		try {
-			await this.monitor.ping({state: 'run'});
+			await this.monitor.ping({ state: "run" });
 			this.token = await this.login();
 			this.emit("ready", this.token);
-			await this.monitor.ping({state: 'complete'});
+			await this.monitor.ping({ state: "complete" });
 			return this.token;
 		} catch (err) {
 			logger.error(err, "Failed to get token, retrying...");
-			await this.monitor.ping({state: 'fail'});
+			await this.monitor.ping({ state: "fail" });
 
 			// take screenshot of error
 			try {
-				await this.page?.screenshot({ path: `./public/errors/error_${dayjs().format("YYYY-MM-DD-HH-MM-SS")}.png` });
+				await this.page?.screenshot({
+					path: `./public/errors/error_${dayjs().format("YYYY-MM-DD-HH-MM-SS")}.png`
+				});
 				await this.browser?.close();
 			} catch (err) {
 				logger.error(err, "Failed to take screenshot");
@@ -227,6 +233,7 @@ export class TokenGrabber extends EventEmitter {
 				}
 
 				logger.info("token cookie found");
+				logger.trace(t);
 				resolve(t.value);
 			} catch (err) {
 				reject(err);

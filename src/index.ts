@@ -17,6 +17,7 @@ export const cronitor = Cronitor();
 
 const calMonitor = new cronitor.Monitor('Create Assignment Calendar');
 const missingMonitor = new cronitor.Monitor('Create Missing Calendar');
+const scheduleMonitor = new cronitor.Monitor('Create Schedule Calendar');
 const rebootMonitor = new cronitor.Monitor('Perform Daily Reboot');
 
 
@@ -42,6 +43,12 @@ tokenGrabber.once("ready", async () => {
 		await missingMonitor.ping({state: "run"})
 		await createMissingCalendar();
 		await missingMonitor.ping({state: "complete"})
+	});
+
+	cron.schedule("*/10 * * * *", async () => {
+		await scheduleMonitor.ping({state: "run"})
+		await createScheduleCalendar();
+		await scheduleMonitor.ping({state: "complete"})
 	});
 });
 
