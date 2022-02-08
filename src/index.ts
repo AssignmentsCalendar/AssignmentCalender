@@ -5,17 +5,19 @@ import { Calendar } from "./structures/calendar.js";
 import dotenv from "dotenv";
 import dayjs from "dayjs";
 import { AssignmentDetails } from "./types/assignment.js";
+import { MissingAssignmentDetails } from "./types/missing.js";
+import { ScheduleDetails } from "./types/schedule.js";
 import cron from "node-cron";
 
 // @ts-expect-error
 import Cronitor from "cronitor";
-import { MissingAssignmentDetails } from "./types/missing.js";
 dotenv.config();
 
 export const cronitor = Cronitor();
 
 const calMonitor = new cronitor.Monitor('Create Assignment Calendar');
 const missingMonitor = new cronitor.Monitor('Create Missing Calendar');
+const scheduleMonitor = new cronitor.Monitor('Create Schedule Calendar');
 const rebootMonitor = new cronitor.Monitor('Perform Daily Reboot');
 
 
@@ -27,8 +29,9 @@ const listener = app.listen(Number(process.env.PORT) || 3000 , () => {
 tokenGrabber.once("ready", async () => {
 	logger.trace("Ready event fired");
 	// run loop every 10 minutes
-	createAssignmentCalendar();
-	createMissingCalendar();
+	await createAssignmentCalendar();
+	await createMissingCalendar();
+	await createScheduleCalendar();
 
 	cron.schedule("*/10 * * * *", async () => {
 		await calMonitor.ping({state: "run"})
@@ -41,19 +44,26 @@ tokenGrabber.once("ready", async () => {
 		await createMissingCalendar();
 		await missingMonitor.ping({state: "complete"})
 	});
+
+	cron.schedule("*/10 * * * *", async () => {
+		await scheduleMonitor.ping({state: "run"})
+		await createScheduleCalendar();
+		await scheduleMonitor.ping({state: "complete"})
+	});
 });
 
 cron.schedule("0 0 * * *", async () => {
-	rebootMonitor.ping({state: "run"});
+	await rebootMonitor.ping({state: "run"});
 	logger.info("Performing Midnight Reboot");
-	rebootMonitor.ping({state: "complete"});
+	await rebootMonitor.ping({state: "complete"});
 	process.exit(0);
 });
 
 
 async function createAssignmentCalendar() {
 	logger.info("Generating New Assignment Calendar");
-	const assignments: AssignmentDetails[] = await tokenGrabber.getAssignments();
+	const assignments = await tokenGrabber.getAssignments();
+	if(!assignments) return;
 
 	const calendar = new Calendar();
 	calendar.setType("ASSIGNMENT");
@@ -74,7 +84,8 @@ async function createAssignmentCalendar() {
 
 async function createMissingCalendar() {
 	logger.info("Generating New Missing Calendar");
-	const assignments: MissingAssignmentDetails[] = await tokenGrabber.getMissing();
+	const assignments = await tokenGrabber.getMissing();
+	if(!assignments) return;
 
 	const calendar = new Calendar();
 	calendar.setType("MISSING");
@@ -84,7 +95,7 @@ async function createMissingCalendar() {
 			summary: assignment.AssignmentTitle,
 			description: assignment.AssignmentLongDescription,
 			id: assignment.AssignmentId,
-			start: dayjs(assignment.DateDue).toDate(),
+			start: dayjs().toDate(),
 			priority: 9,
 			allDay: true,
 		});
@@ -94,8 +105,32 @@ async function createMissingCalendar() {
 	logger.info("Missing Calendar Generated");
 }
 
+async function createScheduleCalendar() {
+	logger.info("Generating New Schedule Calendar");
+	const schedules = await tokenGrabber.getSchedule();
+	if(!schedules) return;
+
+	const calendar = new Calendar();
+	calendar.setType("SCHEDULE");
+	
+	schedules.map((schedule: ScheduleDetails) => {
+		calendar.addEvent({
+			summary: schedule.Title,
+			start: dayjs(schedule.StartDate).toDate(),
+			end: dayjs(schedule.EndDate).toDate(),
+			allDay: schedule.AllDay,
+			description: `Attendance: ${schedule.AttendanceDesc}`,
+		});
+	});
+
+	await calendar.saveCalendar();
+	logger.info("Schedule Calendar Generated");
+}
+
 // export * from every file
 export * from "./structures/scrape.js";
 export * from "./structures/calendar.js";
 export * from "./types/assignment.js";
 export * from "./types/calendar.js";
+export * from "./types/missing.js";
+export * from "./types/schedule.js";

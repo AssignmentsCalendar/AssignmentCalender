@@ -38,11 +38,11 @@ export class Calendar {
 	}
 
 	public addEvent(event: ICalEventData) {
-		event.summary = event.summary?.replace(/[<&].{2,5}[>;]/gm, " ");
+		event.summary = event.summary?.replace(/<[\w \/]{1,6}?>|&#\d*?;/gm, " ");
 
 		// if event summary is a string remove non-breaking spaces
-		if (typeof event.summary === "string") {
-			event.summary = event.summary.replace(/&#.*?;/gm, " ");
+		if (typeof event.description === "string") {
+			event.description = event.description.replace(/&#\d*?;/gm, " ");
 		}
 
 		logger.trace(`Adding event to calendar: ${event.summary}`);

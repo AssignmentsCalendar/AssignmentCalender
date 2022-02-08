@@ -5,8 +5,13 @@ import dayjs from "dayjs";
 import weekday from "dayjs/plugin/weekday.js";
 import fetch from "node-fetch";
 import fs from "fs/promises";
-import { cronitor } from "../index.js"
-
+import {
+	AssignmentDetails,
+	cronitor,
+	MissingAssignmentDetails,
+	ScheduleDetails
+} from "../index.js";
+import { RequestedList } from "../types/scraper.js";
 
 dayjs.extend(weekday);
 
@@ -21,11 +26,11 @@ export class TokenGrabber extends EventEmitter {
 		this.getToken();
 	}
 
-	public async getAssignments(retries = 5): Promise<any> {
+	public async getAssignments(retries = 5): Promise<AssignmentDetails[] | undefined> {
 		try {
-			return await this.requestAssignments();
+			return await this.requestList("ASSIGNMENTS");
 		} catch (err) {
-			logger.error("Failed to get assignments, grabbing token again and retrying...");
+			logger.error(err, "Failed to get assignments, grabbing token again and retrying...");
 
 			if (retries > 0) {
 				await this.getToken();
@@ -37,11 +42,11 @@ export class TokenGrabber extends EventEmitter {
 		}
 	}
 
-	public async getMissing(retries = 5): Promise<any> {
+	public async getMissing(retries = 5): Promise<MissingAssignmentDetails[] | undefined> {
 		try {
-			return await this.requestMissing();
+			return await this.requestList("MISSING");
 		} catch (err) {
-			logger.error("Failed to get missing assignments, grabbing token again and retrying...");
+			logger.error(err, "Failed to get missing assignments, grabbing token again and retrying...");
 
 			if (retries > 0) {
 				await this.getToken();
@@ -53,37 +58,50 @@ export class TokenGrabber extends EventEmitter {
 		}
 	}
 
-	public requestAssignments(): Promise<any> {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const url = await this.generateUrl();
-				const response = await fetch(url);
-				const json: any = await response.json();
+	public async getSchedule(retries = 5): Promise<ScheduleDetails[] | undefined> {
+		try {
+			return await this.requestList("SCHEDULE");
+		} catch (err) {
+			logger.error(err, "Failed to get schedule, grabbing token again and retrying...");
 
-				if (json.ErrorType) {
-					reject(json.ErrorType);
-				}
-
-				resolve(json);
-			} catch (err) {
-				reject(err);
+			if (retries > 0) {
+				await this.getToken();
+				await this.getSchedule(retries - 1);
+			} else {
+				logger.fatal("All attempts failed");
+				process.exit(1);
 			}
-		});
+		}
 	}
 
-	public requestMissing(): Promise<any> {
+	public requestList(type: keyof typeof RequestedList): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const url = this.generateMissingUrl();
+				let url: string = "";
+
+				switch (type) {
+					case "ASSIGNMENTS":
+						url = this.generateAssignmentUrl();
+						break;
+					case "SCHEDULE":
+						url = this.generateScheduleUrl();
+						break;
+					case "MISSING":
+						url = this.generateMissingUrl();
+						break;
+					default:
+						throw new Error("Invalid list type");
+				}
+
 				const response = await fetch(url);
-				const json: any = await response.json();
+				const json = (await response.json()) as any;
 
 				if (json.ErrorType) {
-					reject(json.ErrorType);
+					reject(json);
 				}
 
 				resolve(json);
-			} catch (err) {
+			} catch (err: any) {
 				reject(err);
 			}
 		});
@@ -97,7 +115,7 @@ export class TokenGrabber extends EventEmitter {
 		return `${baseUrl}?studentId=${studentId}&t=${t}`;
 	}
 
-	public generateUrl() {
+	public generateAssignmentUrl() {
 		const baseUrl = `${process.env.BASE_URL}/api/mycalendar/assignments`;
 		const startDate = dayjs().weekday(0).format("MM/DD/YYYY");
 		const endDate = dayjs().add(3, "month").format("MM/DD/YYYY");
@@ -107,23 +125,36 @@ export class TokenGrabber extends EventEmitter {
 			"5023647_17002_89246320_4,5023647_17002_89246332_4,5023647_17002_89246344_4,5023647_17002_89277107_4,5023647_17002_89246379_4,5023647_17002_89246418_4,5023647_17002_89246530_4,5023647_17002_89277049_4,5023647_17002_89277101_4";
 		const recentSave = false;
 
-		return `${baseUrl}?startDate=${startDate}&endDate=${endDate}&t=${t}&filterString=${filterString}&recentSave=${recentSave}`;
+		return `${baseUrl}?t=${t}&startDate=${startDate}&endDate=${endDate}&filterString=${filterString}&recentSave=${recentSave}`;
+	}
+
+	public generateScheduleUrl() {
+		const baseUrl = `${process.env.BASE_URL}/api/mycalendar/schedule`;
+		const startDate = dayjs().weekday(0).format("MM/DD/YYYY");
+		const endDate = dayjs().add(3, "month").format("MM/DD/YYYY");
+		const t = this.token;
+
+		const scheduleString = "5023647_2";
+		const recentSave = false;
+		return `${baseUrl}?startDate=${startDate}&endDate=${endDate}&t=${t}&scheduleString=${scheduleString}&recentSave=${recentSave}`;
 	}
 
 	public async getToken(retries = 5) {
 		try {
-			await this.monitor.ping({state: 'run'});
+			await this.monitor.ping({ state: "run" });
 			this.token = await this.login();
 			this.emit("ready", this.token);
-			await this.monitor.ping({state: 'complete'});
+			await this.monitor.ping({ state: "complete" });
 			return this.token;
 		} catch (err) {
 			logger.error(err, "Failed to get token, retrying...");
-			await this.monitor.ping({state: 'fail'});
+			await this.monitor.ping({ state: "fail" });
 
 			// take screenshot of error
 			try {
-				await this.page?.screenshot({ path: `./public/errors/error_${dayjs().format("YYYY-MM-DD-HH-MM-SS")}.png` });
+				await this.page?.screenshot({
+					path: `./public/errors/error_${dayjs().format("YYYY-MM-DD-HH-MM-SS")}.png`
+				});
 				await this.browser?.close();
 			} catch (err) {
 				logger.error(err, "Failed to take screenshot");
@@ -202,6 +233,7 @@ export class TokenGrabber extends EventEmitter {
 				}
 
 				logger.info("token cookie found");
+				logger.trace(t);
 				resolve(t.value);
 			} catch (err) {
 				reject(err);
