@@ -3,6 +3,7 @@ pull_request_rules:
     conditions:
       - author~=^dependabot(|-preview)\[bot\]$
       - check-success=build (16.x, ubuntu-latest)
+      - check-success=Analyze (TypeScript)
       - title~=^Bump [^\s]+ from ([\d]+)\..+ to \1\.
     actions:
       merge:
