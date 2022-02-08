@@ -1,7 +1,7 @@
 pull_request_rules:
   - name: Automatic dependabot merge
     conditions:
-        - and: 
+        - and:
             - "author=dependabot[bot]"
             - "check-success=build (16.x, ubuntu-latest)"
             - "check-success=Analyze (TypeScript)"
