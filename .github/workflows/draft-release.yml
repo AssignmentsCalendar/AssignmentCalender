@@ -1,10 +1,11 @@
 name: Prepare Release
 
-on: 
-  workflow_dispatch:
+on:
+  [push]:
+  [workflow_dispatch]:
     inputs:
       updateType:
-        description: The type of update this is.
+        description: The type of update this is.https://github.com/AssignmentsCalendar/AssignmentCalender/pulls
         required: true
         default: 'patch'
         type: choice
@@ -26,8 +27,13 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build:release --if-present
-      - run: ls
-      - uses: softprops/action-gh-release@v1
-        with:
-          files: dist.zip
-          draft: true
+  
+  draft-release:
+    name: Draft Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist.zip
+        draft: true
