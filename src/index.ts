@@ -61,7 +61,7 @@ cron.schedule("0 0 * * *", async () => {
 
 
 async function createAssignmentCalendar() {
-	logger.info("Generating New Assignment Calendar");
+	logger.trace("Generating New Assignment Calendar");
 	const assignments = await tokenGrabber.getAssignments();
 	if(!assignments) return;
 
@@ -79,11 +79,11 @@ async function createAssignmentCalendar() {
 	});
 
 	await calendar.saveCalendar();
-	logger.info("Assignment Calendar Generated");
+	logger.info("New Assignment Calendar Generated");
 }
 
 async function createMissingCalendar() {
-	logger.info("Generating New Missing Calendar");
+	logger.trace("Generating New Missing Calendar");
 	const assignments = await tokenGrabber.getMissing();
 	if(!assignments) return;
 
@@ -102,11 +102,11 @@ async function createMissingCalendar() {
 	});
 
 	await calendar.saveCalendar();
-	logger.info("Missing Calendar Generated");
+	logger.info("New Missing Calendar Generated");
 }
 
 async function createScheduleCalendar() {
-	logger.info("Generating New Schedule Calendar");
+	logger.trace("Generating New Schedule Calendar");
 	const schedules = await tokenGrabber.getSchedule();
 	if(!schedules) return;
 
@@ -124,7 +124,7 @@ async function createScheduleCalendar() {
 	});
 
 	await calendar.saveCalendar();
-	logger.info("Schedule Calendar Generated");
+	logger.info("New Schedule Calendar Generated");
 }
 
 // export * from every file
