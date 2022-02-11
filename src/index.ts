@@ -8,12 +8,11 @@ import { AssignmentDetails } from "./types/assignment.js";
 import { MissingAssignmentDetails } from "./types/missing.js";
 import { ScheduleDetails } from "./types/schedule.js";
 import cron from "node-cron";
-
 // @ts-expect-error
 import Cronitor from "cronitor";
 dotenv.config();
 
-export const cronitor = Cronitor();
+const cronitor = Cronitor();
 
 const calMonitor = new cronitor.Monitor('Create Assignment Calendar');
 const missingMonitor = new cronitor.Monitor('Create Missing Calendar');
