@@ -2,11 +2,8 @@ import { CalendarType } from "../types/calendar.js";
 import ical, {
 	ICalCalendar,
 	ICalCalendarData,
-	ICalDescription,
-	ICalEvent,
 	ICalEventData
 } from "ical-generator";
-import dayjs from "dayjs";
 import { logger } from "../config/pino.js";
 
 export class Calendar {
