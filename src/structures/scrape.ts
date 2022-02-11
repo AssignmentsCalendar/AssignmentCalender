@@ -7,11 +7,13 @@ import fetch from "node-fetch";
 import fs from "fs/promises";
 import {
 	AssignmentDetails,
-	cronitor,
 	MissingAssignmentDetails,
 	ScheduleDetails
 } from "../index.js";
 import { RequestedList } from "../types/scraper.js";
+// @ts-expect-error
+import Cronitor from "cronitor";
+const cronitor = new Cronitor();
 
 dayjs.extend(weekday);
 
