@@ -18,7 +18,6 @@ export const cronitor = Cronitor();
 const calMonitor = new cronitor.Monitor('Create Assignment Calendar');
 const missingMonitor = new cronitor.Monitor('Create Missing Calendar');
 const scheduleMonitor = new cronitor.Monitor('Create Schedule Calendar');
-const rebootMonitor = new cronitor.Monitor('Perform Daily Reboot');
 
 
 const tokenGrabber = new TokenGrabber();
@@ -28,7 +27,7 @@ const listener = app.listen(Number(process.env.PORT) || 3000 , () => {
 });
 tokenGrabber.once("ready", async () => {
 	logger.trace("Ready event fired");
-	// run loop every 10 minutes
+
 	await createAssignmentCalendar();
 	await createMissingCalendar();
 	await createScheduleCalendar();
@@ -50,13 +49,6 @@ tokenGrabber.once("ready", async () => {
 		await createScheduleCalendar();
 		await scheduleMonitor.ping({state: "complete"})
 	});
-});
-
-cron.schedule("0 0 * * *", async () => {
-	await rebootMonitor.ping({state: "run"});
-	logger.info("Performing Midnight Reboot");
-	await rebootMonitor.ping({state: "complete"});
-	process.exit(0);
 });
 
 

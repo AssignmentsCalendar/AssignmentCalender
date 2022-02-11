@@ -13,7 +13,7 @@
         "rootDir": "./src",
         "forceConsistentCasingInFileNames": true,
         "listEmittedFiles": true,
-        "listFiles": true,
+
         "lib": [
             "ES6",
             "dom",
