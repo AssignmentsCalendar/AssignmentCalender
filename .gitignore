@@ -81,8 +81,6 @@ public/
 
 *.env
 
-docs/
-
 dist.zip
 
 AssignmentCalender.code-workspace
