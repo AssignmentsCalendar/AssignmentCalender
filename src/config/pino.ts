@@ -15,7 +15,7 @@ const loggerOptions: P.LoggerOptions = {
 				target: "pino-pretty",
 				options: {
 					colorize: false,
-					destination: `public/log/${dayjs().format("YYYY-MM-DD")}.log`,
+					destination: `public/logs/${dayjs().format("YYYY-MM-DD")}.log`,
 					mkdir: true,
 					singleLine: true,
 					translateTime: "yyyy-mm-dd HH:MM:ss Z"
