@@ -1,23 +1,13 @@
 {
+    "extends": "@tsconfig/node16/tsconfig.json",
+
     "compilerOptions": {
-        "strict": true,
-        "alwaysStrict": true,
         "declaration": true,
         "sourceMap": true,
-        "target": "ES6",
-        "module": "ES2020",
-        "allowSyntheticDefaultImports": true,
-        "esModuleInterop": true,
+        "module": "ES6",
         "outDir": "./dist",
         "moduleResolution": "node",
         "rootDir": "./src",
-        "forceConsistentCasingInFileNames": true,
         "listEmittedFiles": true,
-        "noUnusedLocals": true,
-
-        "lib": [
-            "ES6",
-            "dom",
-        ],
     }
 }
