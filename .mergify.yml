@@ -9,12 +9,3 @@ pull_request_rules:
     actions:
       merge:
         method: squash
-
-  - name: automatic merge for McCoughskii pull requests
-    conditions:
-        - author=McCoughskii
-        - check-success=build (16.x, ubuntu-latest)
-        - check-success=Analyze (TypeScript)
-    actions:
-        merge:
-            method: squash
