@@ -10,7 +10,7 @@ app.use((req, res, next) => {
 
 app.use(express.static("public"));
 app.use("/errors", serveIndex("public/errors", { icons: true }));
-app.use("/logs", serveIndex("public/log", { icons: true }));
+app.use("/logs", serveIndex("public/logs", { icons: true }));
 
 app.get("/", (req, res) => {
 	res.send("Hello World!");
