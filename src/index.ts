@@ -3,6 +3,9 @@ import { TokenGrabber } from "./structures/scrape.js";
 import { app } from "./api/express.js";
 import { Calendar } from "./structures/calendar.js";
 import dotenv from "dotenv";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+import advancedFormat from "dayjs/plugin/advancedFormat.js";
 import dayjs from "dayjs";
 import { AssignmentDetails, AssignmentList } from "./types/assignment.js";
 import { MissingAssignmentDetails } from "./types/missing.js";
@@ -12,6 +15,10 @@ import fs from "fs/promises";
 // @ts-expect-error
 import Cronitor from "cronitor";
 dotenv.config();
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(advancedFormat);
 
 const cronitor = Cronitor();
 let json: AssignmentList;
@@ -81,7 +88,7 @@ async function createAssignmentCalendar(): Promise<void> {
 			class: assignment.GroupName,
 			name: assignment.Title,
 			description: assignment.LongDescription,
-			creationDate: dayjs().format("MM/DD/YYYY hh:mm:ss"),
+			creationDate: dayjs().tz("America/Chicago").format("MM/DD/YYYY hh:mm:ss A z"),
 			setAssignedDate: assignment.DateAssigned,
 			dueDate: assignment.DateDue
 		};
