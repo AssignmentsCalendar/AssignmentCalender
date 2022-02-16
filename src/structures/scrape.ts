@@ -10,7 +10,7 @@ import {
 	MissingAssignmentDetails,
 	ScheduleDetails
 } from "../index.js";
-import { RequestedList } from "../types/scraper.js";
+import { RequestedList, ScraperStatus } from "../types/scraper.js";
 // @ts-expect-error
 import Cronitor from "cronitor";
 const cronitor = new Cronitor();
@@ -21,16 +21,36 @@ export class TokenGrabber extends EventEmitter {
 	public token: string | boolean;
 	public browser: puppeteer.Browser | undefined;
 	public page: puppeteer.Page | undefined;
+	public status: keyof typeof ScraperStatus;
 	private monitor = new cronitor.Monitor("Get API Token");
 	public constructor() {
 		super();
 		this.token = "";
+		this.status = "IDLE";
+		this.setStatus("INITIALIZING");
 		this.getToken();
+	}
+
+	public async setStatus(status: keyof typeof ScraperStatus) {
+		this.status = status;
+		this.emit(status);
+	}
+
+	public getStatus(): keyof typeof ScraperStatus {
+		return this.status;
+	}
+
+	public async destroy(): Promise<void> {
+		await this.monitor.ping({state: "complete", message: "Token Grabber destroyed"});
+		return
 	}
 
 	public async getAssignments(retries = 5): Promise<AssignmentDetails[] | undefined> {
 		try {
-			return await this.requestList("ASSIGNMENTS");
+			this.setStatus("REQUESTING_ASSIGNMENTS");
+			const assignmetns = await this.requestList("ASSIGNMENTS");
+			this.setStatus("IDLE");
+			return assignmetns;
 		} catch (err) {
 			logger.error(err, "Failed to get assignments, grabbing token again and retrying...");
 
@@ -46,7 +66,10 @@ export class TokenGrabber extends EventEmitter {
 
 	public async getMissing(retries = 5): Promise<MissingAssignmentDetails[] | undefined> {
 		try {
-			return await this.requestList("MISSING");
+			this.setStatus("REQUESTING_MISSING");
+			const m = await this.requestList("MISSING");
+			this.setStatus("IDLE");
+			return m;
 		} catch (err) {
 			logger.error(err, "Failed to get missing assignments, grabbing token again and retrying...");
 
@@ -62,7 +85,10 @@ export class TokenGrabber extends EventEmitter {
 
 	public async getSchedule(retries = 5): Promise<ScheduleDetails[] | undefined> {
 		try {
-			return await this.requestList("SCHEDULE");
+			this.setStatus("REQUESTING_SCHEDULE");
+			const s = await this.requestList("SCHEDULE");
+			this.setStatus("IDLE");
+			return s;
 		} catch (err) {
 			logger.error(err, "Failed to get schedule, grabbing token again and retrying...");
 
@@ -143,10 +169,12 @@ export class TokenGrabber extends EventEmitter {
 
 	public async getToken(retries = 5) {
 		try {
+			this.setStatus("REQUESTING_TOKEN");
 			await this.monitor.ping({ state: "run" });
 			this.token = await this.login();
 			this.emit("ready", this.token);
 			await this.monitor.ping({ state: "complete" });
+			this.setStatus("IDLE");
 			return this.token;
 		} catch (err) {
 			logger.error(err, "Failed to get token, retrying...");
@@ -176,7 +204,7 @@ export class TokenGrabber extends EventEmitter {
 	public login(): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				this.browser = await puppeteer.launch({ headless: true, args: ["--use-gl=egl"] });
+				this.browser = await puppeteer.launch({ headless: true, handleSIGINT: true, args: ["--use-gl=egl"] });
 				this.page = await this.browser.newPage();
 
 				await this.page.goto(process.env.BASE_URL || "");
