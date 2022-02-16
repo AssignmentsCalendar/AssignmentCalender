@@ -40,9 +40,11 @@ export class TokenGrabber extends EventEmitter {
 		return this.status;
 	}
 
-	public async destroy() {
-		if (this.browser) await this.browser.close();
+	public async destroy(): Promise<void> {
+		await this.monitor.ping({state: "complete", message: "Token Grabber destroyed"});
+		return
 	}
+
 	public async getAssignments(retries = 5): Promise<AssignmentDetails[] | undefined> {
 		try {
 			this.setStatus("REQUESTING_ASSIGNMENTS");
@@ -202,7 +204,7 @@ export class TokenGrabber extends EventEmitter {
 	public login(): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				this.browser = await puppeteer.launch({ headless: true, args: ["--use-gl=egl"] });
+				this.browser = await puppeteer.launch({ headless: true, handleSIGINT: true, args: ["--use-gl=egl"] });
 				this.page = await this.browser.newPage();
 
 				await this.page.goto(process.env.BASE_URL || "");

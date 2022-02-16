@@ -28,3 +28,16 @@ export interface AssignmentDetails {
     UserId:            number;
     NewAssessmentInd:  boolean;
 }
+
+export interface AssignmentList {
+	[key: string]: SavedDetails;
+}
+
+export interface SavedDetails {
+	class: string;
+	name: string;
+	description: string;
+	creationDate: string;
+	setAssignedDate: string;
+	dueDate: string;
+}
