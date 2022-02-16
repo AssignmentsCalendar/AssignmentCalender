@@ -51,7 +51,7 @@ tokenGrabber.once("ready", async () => {
 });
 
 
-async function createAssignmentCalendar() {
+async function createAssignmentCalendar(): Promise<void> {
 	logger.trace("Generating New Assignment Calendar");
 	const assignments = await tokenGrabber.getAssignments();
 	if(!assignments) return;
@@ -73,7 +73,7 @@ async function createAssignmentCalendar() {
 	logger.info("New Assignment Calendar Generated");
 }
 
-async function createMissingCalendar() {
+async function createMissingCalendar(): Promise<void> {
 	logger.trace("Generating New Missing Calendar");
 	const assignments = await tokenGrabber.getMissing();
 	if(!assignments) return;
@@ -96,7 +96,7 @@ async function createMissingCalendar() {
 	logger.info("New Missing Calendar Generated");
 }
 
-async function createScheduleCalendar() {
+async function createScheduleCalendar(): Promise<void> {
 	logger.trace("Generating New Schedule Calendar");
 	const schedules = await tokenGrabber.getSchedule();
 	if(!schedules) return;
@@ -117,6 +117,20 @@ async function createScheduleCalendar() {
 	await calendar.saveCalendar();
 	logger.info("New Schedule Calendar Generated");
 }
+
+process.on("SIGINT", async () => {
+	logger.info("Shutting down");
+	listener.close();
+	// check if tokenGrabber is not idle wait for it to idle
+	if(tokenGrabber.status !== "IDLE") {
+		tokenGrabber.once("IDLE", async () => {
+			await tokenGrabber.destroy();
+		});
+	} else {
+		await tokenGrabber.destroy();
+		process.exit(0);
+	}
+});
 
 // export * from every file
 export * from "./structures/scrape.js";
