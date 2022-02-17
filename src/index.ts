@@ -40,18 +40,19 @@ tokenGrabber.once("ready", async () => {
 	await createScheduleCalendar();
 
 	cron.schedule("*/5 * * * *", async () => {
+		logger.trace("Cron Fired");
+		
+		logger.trace("Creating Assignment Calendar");
 		await calMonitor.ping({ state: "run" });
 		await createAssignmentCalendar();
 		await calMonitor.ping({ state: "complete" });
-	});
 
-	cron.schedule("*/5 * * * *", async () => {
+		logger.trace("Creating Missing Calendar");
 		await missingMonitor.ping({ state: "run" });
 		await createMissingCalendar();
 		await missingMonitor.ping({ state: "complete" });
-	});
 
-	cron.schedule("*/5 * * * *", async () => {
+		logger.trace("Creating Schedule Calendar");
 		await scheduleMonitor.ping({ state: "run" });
 		await createScheduleCalendar();
 		await scheduleMonitor.ping({ state: "complete" });
