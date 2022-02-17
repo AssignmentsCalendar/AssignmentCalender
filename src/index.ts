@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 import { AssignmentDetails, AssignmentList, GroupID, AssignmentID } from "./types/assignment.js";
 import { MissingAssignmentDetails } from "./types/missing.js";
 import { ScheduleDetails } from "./types/schedule.js";
+import io from "@pm2/io";
 import cron from "node-cron";
 import fs from "fs/promises";
 // @ts-expect-error
@@ -187,6 +188,53 @@ process.on("SIGINT", async () => {
 	await tokenGrabber.destroy();
 	listener.close();
 	process.exit(0);
+});
+
+
+// Create pm2 actions
+
+io.action("enable debug logs", (cb:any) => {
+	logger.info("Enabling debug logs");
+	logger.level = "trace";
+	return cb({ sucess: true });
+});
+
+io.action("disable debug logs", (cb:any) => {
+	logger.info("Disabling debug logs");
+	logger.level = "info";
+	return cb({ sucess: true });
+});
+
+io.action("run CreateAssignmentCalendar()", async (cb:any) => {
+	logger.info("Running CreateAssignmentCalendar()");
+	await createAssignmentCalendar();
+	return cb({ sucess: true });
+});
+
+io.action("run CreateMissingCalendar()", async (cb:any) => {
+	logger.info("Running CreateMissingCalendar()");
+	await createMissingCalendar();
+	return cb({ sucess: true });
+});
+
+io.action("run CreateScheduleCalendar()", async (cb:any) => {
+	logger.info("Running CreateScheduleCalendar()");
+	await createScheduleCalendar();
+	return cb({ sucess: true });
+});
+
+io.action("run CreateAllCalendars()", async (cb:any) => {
+	logger.info("Running CreateAllCalendars()");
+	await createAssignmentCalendar();
+	await createMissingCalendar();
+	await createScheduleCalendar();
+	return cb({ sucess: true });
+});
+
+io.action("Save Assignments", async (cb:any) => {
+	logger.info("Saving Assignments");
+	await fs.writeFile("./public/assignments.json", JSON.stringify(await readAssignments()) || JSON.stringify({}));
+	return cb({ sucess: true });
 });
 
 // export * from every file

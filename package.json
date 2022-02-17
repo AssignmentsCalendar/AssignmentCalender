@@ -21,6 +21,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@pm2/io": "^5.0.0",
     "cronitor": "^2.2.3",
     "dotenv": "^16.0.0",
     "express": "^4.17.2",
