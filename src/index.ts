@@ -7,7 +7,7 @@ import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import advancedFormat from "dayjs/plugin/advancedFormat.js";
 import dayjs from "dayjs";
-import { AssignmentDetails, AssignmentList } from "./types/assignment.js";
+import { AssignmentDetails, AssignmentList, GroupID, AssignmentID } from "./types/assignment.js";
 import { MissingAssignmentDetails } from "./types/missing.js";
 import { ScheduleDetails } from "./types/schedule.js";
 import cron from "node-cron";
@@ -21,7 +21,6 @@ dayjs.extend(timezone);
 dayjs.extend(advancedFormat);
 
 const cronitor = Cronitor();
-let json: AssignmentList;
 
 const calMonitor = new cronitor.Monitor("Create Assignment Calendar");
 const missingMonitor = new cronitor.Monitor("Create Missing Calendar");
@@ -35,31 +34,23 @@ const listener = app.listen(Number(process.env.PORT) || 3000, () => {
 tokenGrabber.once("ready", async () => {
 	logger.trace("Ready event fired");
 
-	try {
-		json = JSON.parse(
-			await fs.readFile("./public/assignments.json", { encoding: "utf-8", flag: "a+" })
-		);
-	} catch (err) {
-		json = {};
-	}
-
 	await createAssignmentCalendar();
 	await createMissingCalendar();
 	await createScheduleCalendar();
 
-	cron.schedule("*/10 * * * *", async () => {
+	cron.schedule("*/5 * * * *", async () => {
 		await calMonitor.ping({ state: "run" });
 		await createAssignmentCalendar();
 		await calMonitor.ping({ state: "complete" });
 	});
 
-	cron.schedule("*/10 * * * *", async () => {
+	cron.schedule("*/5 * * * *", async () => {
 		await missingMonitor.ping({ state: "run" });
 		await createMissingCalendar();
 		await missingMonitor.ping({ state: "complete" });
 	});
 
-	cron.schedule("*/10 * * * *", async () => {
+	cron.schedule("*/5 * * * *", async () => {
 		await scheduleMonitor.ping({ state: "run" });
 		await createScheduleCalendar();
 		await scheduleMonitor.ping({ state: "complete" });
@@ -74,7 +65,9 @@ async function createAssignmentCalendar(): Promise<void> {
 	const calendar = new Calendar();
 	calendar.setType("ASSIGNMENT");
 
-	assignments.map((assignment: AssignmentDetails) => {
+	const json: AssignmentList = await readAssignments();
+
+	assignments.map(async (assignment: AssignmentDetails) => {
 		calendar.addEvent({
 			summary: assignment.Title,
 			description: assignment.LongDescription,
@@ -83,8 +76,10 @@ async function createAssignmentCalendar(): Promise<void> {
 			allDay: true
 		});
 
-		if (json[assignment.AssignmentId]) return;
-		json[assignment.AssignmentId] = {
+		const id = generateID(assignment);
+
+		if (json[id] != undefined) return;
+		json[id] = {
 			class: assignment.GroupName,
 			name: assignment.Title,
 			description: assignment.LongDescription,
@@ -92,9 +87,11 @@ async function createAssignmentCalendar(): Promise<void> {
 			setAssignedDate: assignment.DateAssigned,
 			dueDate: assignment.DateDue
 		};
+
+		logger.info(`New Assignment: ${assignment.Title}`);
 	});
 
-	await fs.writeFile("./public/assignments.json", JSON.stringify(json));
+	await fs.writeFile("./public/assignments.json", JSON.stringify(json) || "{}");
 	logger.info("Assignments Saved to JSON");
 
 	await calendar.saveCalendar();
@@ -144,6 +141,45 @@ async function createScheduleCalendar(): Promise<void> {
 
 	await calendar.saveCalendar();
 	logger.info("New Schedule Calendar Generated");
+}
+
+async function readAssignments() {
+	let j = {};
+
+	try {
+		j = JSON.parse(
+			await fs.readFile("./public/assignments.json", { encoding: "utf-8", flag: "a+" })
+		);
+	} catch {
+		await fs.writeFile("./public/assignments.json", JSON.stringify({}));
+	}
+
+	logger.info("Assignments Read from JSON");
+	return j;
+}
+
+function generateID(assignment: AssignmentDetails) {
+	let id: string = "";
+
+	const assignmentID = assignment.AssignmentType as keyof typeof AssignmentID;
+	if (assignmentID in AssignmentID) {
+		id = id + AssignmentID[assignmentID];
+	} else {
+		id = id + AssignmentID.Other;
+	}
+
+	id = id + "-";
+
+	const groupID = assignment.GroupName as keyof typeof GroupID;
+	if (groupID in GroupID) {
+		id = id + GroupID[groupID];
+	} else {
+		id = id + GroupID.Other;
+	}
+
+	id = id + "-" + assignment.AssignmentId;
+
+	return id;
 }
 
 process.on("SIGINT", async () => {
