@@ -35,13 +35,9 @@ const listener = app.listen(Number(process.env.PORT) || 3000, () => {
 tokenGrabber.once("ready", async () => {
 	logger.trace("Ready event fired");
 
-	await createAssignmentCalendar();
-	await createMissingCalendar();
-	await createScheduleCalendar();
-
 	cron.schedule("*/5 * * * *", async () => {
 		logger.trace("Cron Fired");
-		
+
 		logger.trace("Creating Assignment Calendar");
 		await calMonitor.ping({ state: "run" });
 		await createAssignmentCalendar();
@@ -93,7 +89,7 @@ async function createAssignmentCalendar(): Promise<void> {
 		logger.info(`New Assignment: ${assignment.Title}`);
 	});
 
-	await fs.writeFile("./public/assignments.json", JSON.stringify(json) || "{}");
+	await fs.writeFile("./public/assignments.json", JSON.stringify(json));
 	logger.info("Assignments Saved to JSON");
 
 	await calendar.saveCalendar();
@@ -153,6 +149,7 @@ async function readAssignments() {
 			await fs.readFile("./public/assignments.json", { encoding: "utf-8", flag: "a+" })
 		);
 	} catch {
+		j = {};
 		await fs.writeFile("./public/assignments.json", JSON.stringify({}));
 	}
 
