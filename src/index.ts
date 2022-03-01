@@ -42,16 +42,19 @@ tokenGrabber.once("ready", async () => {
 		await calMonitor.ping({ state: "run" });
 		await createAssignmentCalendar();
 		await calMonitor.ping({ state: "complete" });
+		logger.trace("Assignment Calendar Created");
 
 		logger.trace("Creating Missing Calendar");
 		await missingMonitor.ping({ state: "run" });
 		await createMissingCalendar();
 		await missingMonitor.ping({ state: "complete" });
+		logger.trace("Missing Calendar Created");
 
 		logger.trace("Creating Schedule Calendar");
 		await scheduleMonitor.ping({ state: "run" });
 		await createScheduleCalendar();
 		await scheduleMonitor.ping({ state: "complete" });
+		logger.trace("Schedule Calendar Created");
 	});
 });
 
@@ -184,10 +187,36 @@ function generateID(assignment: AssignmentDetails) {
 process.on("SIGINT", async () => {
 	logger.info("Shutdown signal received, closing connections and exiting");
 	await tokenGrabber.destroy();
+	logger.info("Token Grabber destroyed");
 	listener.close();
+	logger.info("Listener closed");
+	logger.flush();
 	process.exit(0);
 });
 
+process.on("SIGTERM", async () => {
+	logger.info("Termination signal received, closing connections and exiting");
+	await tokenGrabber.destroy();
+	listener.close();
+	logger.flush();
+	process.exit(0);
+});
+
+process.on("unhandledRejection", async (reason, promise) => {
+	logger.fatal("Unhandled Rejection at:", promise, "reason:", reason);
+	await tokenGrabber.destroy();
+	listener.close();
+	logger.flush();
+	process.exit(1);
+});
+
+process.on("uncaughtException", async (error) => {
+	logger.fatal("Uncaught Exception:", error);
+	await tokenGrabber.destroy();
+	listener.close();
+	logger.flush();
+	process.exit(1);
+});
 
 // Create pm2 actions
 

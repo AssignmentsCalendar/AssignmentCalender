@@ -169,12 +169,14 @@ export class TokenGrabber extends EventEmitter {
 
 	public async getToken(retries = 5) {
 		try {
+			logger.info("Requesting a new token token");
 			this.setStatus("REQUESTING_TOKEN");
 			await this.monitor.ping({ state: "run" });
 			this.token = await this.login();
 			this.emit("ready", this.token);
 			await this.monitor.ping({ state: "complete" });
 			this.setStatus("IDLE");
+			logger.info("Token request complete");
 			return this.token;
 		} catch (err) {
 			logger.error(err, "Failed to get token, retrying...");
