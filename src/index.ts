@@ -35,6 +35,10 @@ const listener = app.listen(Number(process.env.PORT) || 3000, () => {
 tokenGrabber.once("ready", async () => {
 	logger.trace("Ready event fired");
 
+	await createAssignmentCalendar();
+	await createMissingCalendar();
+	await createScheduleCalendar();
+
 	cron.schedule("*/5 * * * *", async () => {
 		logger.trace("Cron Fired");
 
