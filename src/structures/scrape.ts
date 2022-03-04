@@ -244,7 +244,6 @@ export class TokenGrabber extends EventEmitter {
 				await this.page.type("input#password.mCAa0e", process.env.PASSWORD || "");
 				await this.page.click("input#submit.MK9CEd.MVpUfe");
 				logger.info("Password entered and clicked login button");
-				await this.page.waitForNavigation();
 
 				let attempts = 0;
 				while (this.page.url() !== `${process.env.BASE_URL}/app/student` || attempts >= 30) {
