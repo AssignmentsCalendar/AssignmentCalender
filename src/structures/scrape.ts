@@ -149,11 +149,7 @@ export class TokenGrabber extends EventEmitter {
 		const endDate = dayjs().add(3, "month").format("MM/DD/YYYY");
 		const t = this.token;
 
-		const filterString =
-			"5023647_17002_89246320_4,5023647_17002_89246332_4,5023647_17002_89246344_4,5023647_17002_89277107_4,5023647_17002_89246379_4,5023647_17002_89246418_4,5023647_17002_89246530_4,5023647_17002_89277049_4,5023647_17002_89277101_4";
-		const recentSave = false;
-
-		return `${baseUrl}?t=${t}&startDate=${startDate}&endDate=${endDate}&filterString=${filterString}&recentSave=${recentSave}`;
+		return `${baseUrl}?t=${t}&startDate=${startDate}&endDate=${endDate}&filterString=${process.env.FILTERSTRING}&recentSave=false`;
 	}
 
 	public generateScheduleUrl() {
@@ -169,12 +165,14 @@ export class TokenGrabber extends EventEmitter {
 
 	public async getToken(retries = 5) {
 		try {
+			logger.info("Requesting a new token token");
 			this.setStatus("REQUESTING_TOKEN");
 			await this.monitor.ping({ state: "run" });
 			this.token = await this.login();
 			this.emit("ready", this.token);
 			await this.monitor.ping({ state: "complete" });
 			this.setStatus("IDLE");
+			logger.info("Token request complete");
 			return this.token;
 		} catch (err) {
 			logger.error(err, "Failed to get token, retrying...");
@@ -206,6 +204,8 @@ export class TokenGrabber extends EventEmitter {
 			try {
 				this.browser = await puppeteer.launch({ headless: true, handleSIGINT: true, args: ["--use-gl=egl"] });
 				this.page = await this.browser.newPage();
+
+				this.page.setDefaultTimeout(10000000);
 
 				await this.page.goto(process.env.BASE_URL || "");
 				logger.info("Connected to CORE");
@@ -242,7 +242,6 @@ export class TokenGrabber extends EventEmitter {
 				await this.page.type("input#password.mCAa0e", process.env.PASSWORD || "");
 				await this.page.click("input#submit.MK9CEd.MVpUfe");
 				logger.info("Password entered and clicked login button");
-				await this.page.waitForNavigation();
 
 				let attempts = 0;
 				while (this.page.url() !== `${process.env.BASE_URL}/app/student` || attempts >= 30) {

@@ -40,21 +40,25 @@ tokenGrabber.once("ready", async () => {
 	await createScheduleCalendar();
 
 	cron.schedule("*/5 * * * *", async () => {
+		logger.trace("Cron Fired");
+
+		logger.trace("Creating Assignment Calendar");
 		await calMonitor.ping({ state: "run" });
 		await createAssignmentCalendar();
 		await calMonitor.ping({ state: "complete" });
-	});
+		logger.trace("Assignment Calendar Created");
 
-	cron.schedule("*/5 * * * *", async () => {
+		logger.trace("Creating Missing Calendar");
 		await missingMonitor.ping({ state: "run" });
 		await createMissingCalendar();
 		await missingMonitor.ping({ state: "complete" });
-	});
+		logger.trace("Missing Calendar Created");
 
-	cron.schedule("*/5 * * * *", async () => {
+		logger.trace("Creating Schedule Calendar");
 		await scheduleMonitor.ping({ state: "run" });
 		await createScheduleCalendar();
 		await scheduleMonitor.ping({ state: "complete" });
+		logger.trace("Schedule Calendar Created");
 	});
 });
 
@@ -92,7 +96,7 @@ async function createAssignmentCalendar(): Promise<void> {
 		logger.info(`New Assignment: ${assignment.Title}`);
 	});
 
-	await fs.writeFile("./public/assignments.json", JSON.stringify(json) || "{}");
+	await fs.writeFile("./public/assignments.json", JSON.stringify(json));
 	logger.info("Assignments Saved to JSON");
 
 	await calendar.saveCalendar();
@@ -152,6 +156,7 @@ async function readAssignments() {
 			await fs.readFile("./public/assignments.json", { encoding: "utf-8", flag: "a+" })
 		);
 	} catch {
+		j = {};
 		await fs.writeFile("./public/assignments.json", JSON.stringify({}));
 	}
 
@@ -186,10 +191,36 @@ function generateID(assignment: AssignmentDetails) {
 process.on("SIGINT", async () => {
 	logger.info("Shutdown signal received, closing connections and exiting");
 	await tokenGrabber.destroy();
+	logger.info("Token Grabber destroyed");
 	listener.close();
+	logger.info("Listener closed");
+	logger.flush();
 	process.exit(0);
 });
 
+process.on("SIGTERM", async () => {
+	logger.info("Termination signal received, closing connections and exiting");
+	await tokenGrabber.destroy();
+	listener.close();
+	logger.flush();
+	process.exit(0);
+});
+
+process.on("unhandledRejection", async (reason, promise) => {
+	logger.fatal("Unhandled Rejection at:", promise, "reason:", reason);
+	await tokenGrabber.destroy();
+	listener.close();
+	logger.flush();
+	process.exit(1);
+});
+
+process.on("uncaughtException", async (error) => {
+	logger.fatal("Uncaught Exception:", error);
+	await tokenGrabber.destroy();
+	listener.close();
+	logger.flush();
+	process.exit(1);
+});
 
 // Create pm2 actions
 

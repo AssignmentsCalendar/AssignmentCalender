@@ -6,12 +6,12 @@ const loggerOptions: P.LoggerOptions = {
 	transport: {
 		targets: [
 			{
-				level: "info",
+				level: "trace",
 				target: "pino-pretty",
 				options: { colorize: true, ignore: "pid,hostname", translateTime: "SYS:HH:MM:ss Z" }
 			},
 			{
-				level: "info",
+				level: "trace",
 				target: "pino-pretty",
 				options: {
 					colorize: false,
