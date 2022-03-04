@@ -53,48 +53,6 @@ export enum AssignmentID {
     "Other" = "O",
 }
 
-// group ids for classes but must be unique 
-// format: "Category"-"Class"-#/Letter
-
-export enum GroupID {
-	"Algebra 1 - 1" = "A1-1",
-	"Algebra 1 - 2" = "A1-2",
-	"Algebra 1 - 3" = "A1-3",
-
-	"Algebra 2 - 1" = "A2-1",
-	"Algebra 2 - 2" = "A2-2",
-	"Algebra 2 - 3" = "A2-3",
-
-	"Vocal Ensemble - 1" = "VE-1",
-	"Vocal Ensemble - 2" = "VE-2",
-	"Vocal Ensemble - 3" = "VE-3",
-
-	"British Literature - 1" = "BTL-1",
-    "British Literature - 2" = "BTL-2",
-    "British Literature - 3" = "BTL-3",
-
-	"Beginners Latin - 1" = "BL-1",
-    "Beginners Latin - 2" = "BL-2",
-    "Beginners Latin - 3" = "BL-3",
-
-	"Intermediate Latin - 1" = "IL-1",
-    "Intermediate Latin - 2" = "IL-2",
-    "Intermediate Latin - 3" = "IL-3",
-
-	"Advanced Latin - 1" = "AL-1",
-    "Advanced Latin - 2" = "AL-2",
-    "Advanced Latin - 3" = "AL-3",
-
-	"Biology - A" = "B-A",
-	"Biology - B" = "B-B",
-	"Biology - C" = "B-C",
-	"Biology - D" = "B-D",
-	"Biology - E" = "B-E",
-	"Biology - F" = "B-F",
-
-    "Other" = "O-O",
-}
-
 // ============================================================================
 //
 // AssignemtID + GroupID legend:

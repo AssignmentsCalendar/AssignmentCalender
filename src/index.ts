@@ -7,7 +7,7 @@ import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import advancedFormat from "dayjs/plugin/advancedFormat.js";
 import dayjs from "dayjs";
-import { AssignmentDetails, AssignmentList, GroupID, AssignmentID } from "./types/assignment.js";
+import { AssignmentDetails, AssignmentList, AssignmentID } from "./types/assignment.js";
 import { MissingAssignmentDetails } from "./types/missing.js";
 import { ScheduleDetails } from "./types/schedule.js";
 import io from "@pm2/io";
@@ -167,6 +167,7 @@ async function readAssignments() {
 function generateID(assignment: AssignmentDetails) {
 	let id: string = "";
 
+	// Assignment Type Section
 	const assignmentID = assignment.AssignmentType as keyof typeof AssignmentID;
 	if (assignmentID in AssignmentID) {
 		id = id + AssignmentID[assignmentID];
@@ -176,13 +177,31 @@ function generateID(assignment: AssignmentDetails) {
 
 	id = id + "-";
 
-	const groupID = assignment.GroupName as keyof typeof GroupID;
-	if (groupID in GroupID) {
-		id = id + GroupID[groupID];
-	} else {
-		id = id + GroupID.Other;
-	}
+	// ClassID section
+	const groupID = assignment.GroupName;
 
+	// split the group name into words up until the first -
+	const groupSplit = groupID.split("-");
+	const groupName = groupSplit[0];
+	const groupWords = groupName.split(/[\. ]/gm);
+
+	console.log(groupName)
+	console.log(groupWords);
+
+	// remove articles like "of", "the" and "and"
+	const articles = ["of", "the", "and"];
+	const filteredWords = groupWords.filter(word => !articles.includes(word));
+	
+	// add the first letter of each word to the id
+	filteredWords.map((word: string) => {
+		id = id + word.charAt(0).toLocaleUpperCase();
+	});
+
+	// Assignment Period Section
+	const periodID = groupSplit[1].trim();
+	id = id + "-" + periodID;
+
+	// attached the assignment id that CORE assignes to keep it unique
 	id = id + "-" + assignment.AssignmentId;
 
 	return id;
