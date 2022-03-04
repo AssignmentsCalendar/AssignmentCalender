@@ -5,9 +5,13 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ main ]
+    branches: 
+    - main
+    - "v*.*.x"
   pull_request:
-    branches: [ main ]
+    branches:
+    - main
+    - "v*.*.x"
 
 jobs:
   build:
@@ -15,7 +19,7 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x]
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+        os: ["ubuntu-latest", "windows-latest", "self-hosted"]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         
     runs-on: ${{matrix.os}}
