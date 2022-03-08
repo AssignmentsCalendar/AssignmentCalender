@@ -87,6 +87,7 @@ async function createAssignmentCalendar(): Promise<void> {
 		json[id] = {
 			class: assignment.GroupName,
 			name: assignment.Title,
+			type: assignment.AssignmentType,
 			description: assignment.LongDescription,
 			creationDate: dayjs().tz("America/Chicago").format("MM/DD/YYYY hh:mm:ss A z"),
 			setAssignedDate: assignment.DateAssigned,
@@ -168,13 +169,10 @@ function generateID(assignment: AssignmentDetails) {
 	let id: string = "";
 
 	// Assignment Type Section
-	const assignmentID = assignment.AssignmentType as keyof typeof AssignmentID;
-	if (assignmentID in AssignmentID) {
-		id = id + AssignmentID[assignmentID];
-	} else {
-		id = id + AssignmentID.Other;
-	}
+	const assignmentID = assignment.AssignmentType;
 
+	// Get the first letter of the assignment type
+	id = id + assignmentID.charAt(0);
 	id = id + "-";
 
 	// ClassID section
@@ -185,13 +183,13 @@ function generateID(assignment: AssignmentDetails) {
 	const groupName = groupSplit[0];
 	const groupWords = groupName.split(/[\. ]/gm);
 
-	console.log(groupName)
+	console.log(groupName);
 	console.log(groupWords);
 
 	// remove articles like "of", "the" and "and"
-	const articles = ["of", "the", "and"];
-	const filteredWords = groupWords.filter(word => !articles.includes(word));
-	
+	const articles = ["of", "the", "and", "a", "an"];
+	const filteredWords = groupWords.filter((word) => !articles.includes(word));
+
 	// add the first letter of each word to the id
 	filteredWords.map((word: string) => {
 		id = id + word.charAt(0).toLocaleUpperCase();
@@ -207,73 +205,70 @@ function generateID(assignment: AssignmentDetails) {
 	return id;
 }
 
+process.stdin.resume();
+
+process.on("exit", (code) => {
+	tokenGrabber.destroy();
+	logger.info("Token Grabber Destroyed");
+	listener.close();
+	logger.info("Listener Closed");
+	logger.info(`Flushing logs and exiting with code ${code}...`);
+	logger.flush();
+});
+
 process.on("SIGINT", async () => {
 	logger.info("Shutdown signal received, closing connections and exiting");
-	await tokenGrabber.destroy();
-	logger.info("Token Grabber destroyed");
-	listener.close();
-	logger.info("Listener closed");
-	logger.flush();
 	process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
 	logger.info("Termination signal received, closing connections and exiting");
-	await tokenGrabber.destroy();
-	listener.close();
-	logger.flush();
 	process.exit(0);
 });
 
 process.on("unhandledRejection", async (reason, promise) => {
 	logger.fatal("Unhandled Rejection at:", promise, "reason:", reason);
-	await tokenGrabber.destroy();
-	listener.close();
-	logger.flush();
 	process.exit(1);
 });
 
 process.on("uncaughtException", async (error) => {
 	logger.fatal("Uncaught Exception:", error);
-	await tokenGrabber.destroy();
-	listener.close();
-	logger.flush();
 	process.exit(1);
 });
 
 // Create pm2 actions
 
-io.action("enable debug logs", (cb:any) => {
+io.action("enable debug logs", (cb: any) => {
 	logger.info("Enabling debug logs");
 	logger.level = "trace";
 	return cb({ sucess: true });
 });
 
-io.action("disable debug logs", (cb:any) => {
+io.action("disable debug logs", (cb: any) => {
 	logger.info("Disabling debug logs");
 	logger.level = "info";
 	return cb({ sucess: true });
 });
 
-io.action("run CreateAssignmentCalendar()", async (cb:any) => {
+io.action("run CreateAssignmentCalendar()", async (cb: any) => {
 	logger.info("Running CreateAssignmentCalendar()");
 	await createAssignmentCalendar();
 	return cb({ sucess: true });
 });
 
-io.action("run CreateMissingCalendar()", async (cb:any) => {
+io.action("run CreateMissingCalendar()", async (cb: any) => {
 	logger.info("Running CreateMissingCalendar()");
 	await createMissingCalendar();
 	return cb({ sucess: true });
 });
 
-io.action("run CreateScheduleCalendar()", async (cb:any) => {
+io.action("run CreateScheduleCalendar()", async (cb: any) => {
 	logger.info("Running CreateScheduleCalendar()");
 	await createScheduleCalendar();
 	return cb({ sucess: true });
 });
 
-io.action("run CreateAllCalendars()", async (cb:any) => {
+io.action("run CreateAllCalendars()", async (cb: any) => {
 	logger.info("Running CreateAllCalendars()");
 	await createAssignmentCalendar();
 	await createMissingCalendar();
@@ -281,9 +276,12 @@ io.action("run CreateAllCalendars()", async (cb:any) => {
 	return cb({ sucess: true });
 });
 
-io.action("Save Assignments", async (cb:any) => {
+io.action("Save Assignments", async (cb: any) => {
 	logger.info("Saving Assignments");
-	await fs.writeFile("./public/assignments.json", JSON.stringify(await readAssignments()) || JSON.stringify({}));
+	await fs.writeFile(
+		"./public/assignments.json",
+		JSON.stringify(await readAssignments()) || JSON.stringify({})
+	);
 	return cb({ sucess: true });
 });
 

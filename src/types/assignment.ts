@@ -36,6 +36,7 @@ export interface AssignmentList {
 export interface SavedDetails {
 	class: string;
 	name: string;
+    type: string;
 	description: string;
 	creationDate: string;
 	setAssignedDate: string;
