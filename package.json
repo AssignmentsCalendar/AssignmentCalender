@@ -31,7 +31,7 @@
     "node-fetch": "^3.2.2",
     "pino": "^7.9.1",
     "pino-pretty": "^7.5.4",
-    "puppeteer": "^13.5.0",
+    "puppeteer": "^13.5.1",
     "request": "^2.88.2",
     "serve-index": "^1.9.1"
   },
