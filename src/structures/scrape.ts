@@ -11,7 +11,7 @@ import {
 	ScheduleDetails
 } from "../index.js";
 import { RequestedList, ScraperStatus } from "../types/scraper.js";
-// @ts-expect-error
+// @ts-expect-error The module is not typed
 import Cronitor from "cronitor";
 const cronitor = new Cronitor();
 
@@ -42,7 +42,7 @@ export class TokenGrabber extends EventEmitter {
 
 	public async destroy(): Promise<void> {
 		await this.monitor.ping({state: "complete", message: "Token Grabber destroyed"});
-		return
+		return;
 	}
 
 	public async getAssignments(retries = 5): Promise<AssignmentDetails[] | undefined> {
@@ -102,23 +102,24 @@ export class TokenGrabber extends EventEmitter {
 		}
 	}
 
-	public requestList(type: keyof typeof RequestedList): Promise<any> {
-		return new Promise(async (resolve, reject) => {
+	public async requestList(type: keyof typeof RequestedList): Promise<any> {
+		// eslint-disable-next-line no-async-promise-executor
+		return new Promise( async (resolve, reject): Promise<void> => {
 			try {
-				let url: string = "";
+				let url = "";
 
 				switch (type) {
-					case "ASSIGNMENTS":
-						url = this.generateAssignmentUrl();
-						break;
-					case "SCHEDULE":
-						url = this.generateScheduleUrl();
-						break;
-					case "MISSING":
-						url = this.generateMissingUrl();
-						break;
-					default:
-						throw new Error("Invalid list type");
+				case "ASSIGNMENTS":
+					url = this.generateAssignmentUrl();
+					break;
+				case "SCHEDULE":
+					url = this.generateScheduleUrl();
+					break;
+				case "MISSING":
+					url = this.generateMissingUrl();
+					break;
+				default:
+					throw new Error("Invalid list type");
 				}
 
 				const response = await fetch(url);
@@ -200,6 +201,7 @@ export class TokenGrabber extends EventEmitter {
 	}
 
 	public login(): Promise<string> {
+		// eslint-disable-next-line no-async-promise-executor
 		return new Promise(async (resolve, reject) => {
 			try {
 				this.browser = await puppeteer.launch({ headless: true, handleSIGINT: true, args: ["--use-gl=egl"] });
@@ -225,11 +227,11 @@ export class TokenGrabber extends EventEmitter {
 
 				// google email login
 				logger.info("Beginning Google login");
-				await this.page.waitForSelector('.signin-card input[type="submit"]');
+				await this.page.waitForSelector(".signin-card input[type=\"submit\"]");
 				logger.info("Found Google login button, waiting 1 second..");
 				await this.page.waitForTimeout(1000);
 				logger.trace("Wait complete, clicking Google login button");
-				await this.page.click('.signin-card input[type="submit"]');
+				await this.page.click(".signin-card input[type=\"submit\"]");
 				logger.info("Google login button clicked");
 
 				// google password section
@@ -271,4 +273,4 @@ export class TokenGrabber extends EventEmitter {
 	}
 }
 
-fs.mkdir("./public/errors", { recursive: true }).catch((err) => {});
+fs.mkdir("./public/errors", { recursive: true }).catch();

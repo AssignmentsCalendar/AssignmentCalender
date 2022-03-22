@@ -7,13 +7,12 @@ import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import advancedFormat from "dayjs/plugin/advancedFormat.js";
 import dayjs from "dayjs";
-import { AssignmentDetails, AssignmentList, AssignmentID } from "./types/assignment.js";
+import { AssignmentDetails, AssignmentList} from "./types/assignment.js";
 import { MissingAssignmentDetails } from "./types/missing.js";
 import { ScheduleDetails } from "./types/schedule.js";
-import io from "@pm2/io";
 import cron from "node-cron";
 import fs from "fs/promises";
-// @ts-expect-error
+// @ts-expect-error The module is not typed
 import Cronitor from "cronitor";
 dotenv.config();
 
@@ -30,7 +29,7 @@ const scheduleMonitor = new cronitor.Monitor("Create Schedule Calendar");
 const tokenGrabber = new TokenGrabber();
 
 const listener = app.listen(Number(process.env.PORT) || 3000, () => {
-	logger.info(listener.address(), `Your app has started`);
+	logger.info(listener.address(), "Your app has started");
 });
 tokenGrabber.once("ready", async () => {
 	logger.trace("Ready event fired");
@@ -166,7 +165,7 @@ async function readAssignments() {
 }
 
 function generateID(assignment: AssignmentDetails) {
-	let id: string = "";
+	let id = "";
 
 	// Assignment Type Section
 	const assignmentID = assignment.AssignmentType;
@@ -181,7 +180,7 @@ function generateID(assignment: AssignmentDetails) {
 	// split the group name into words up until the first -
 	const groupSplit = groupID.split("-");
 	const groupName = groupSplit[0];
-	const groupWords = groupName.split(/[\. ]/gm);
+	const groupWords = groupName.split(/[. ]/gm);
 
 	console.log(groupName);
 	console.log(groupWords);
@@ -234,55 +233,6 @@ process.on("unhandledRejection", async (reason, promise) => {
 process.on("uncaughtException", async (error) => {
 	logger.fatal("Uncaught Exception:", error);
 	process.exit(1);
-});
-
-// Create pm2 actions
-
-io.action("enable debug logs", (cb: any) => {
-	logger.info("Enabling debug logs");
-	logger.level = "trace";
-	return cb({ sucess: true });
-});
-
-io.action("disable debug logs", (cb: any) => {
-	logger.info("Disabling debug logs");
-	logger.level = "info";
-	return cb({ sucess: true });
-});
-
-io.action("run CreateAssignmentCalendar()", async (cb: any) => {
-	logger.info("Running CreateAssignmentCalendar()");
-	await createAssignmentCalendar();
-	return cb({ sucess: true });
-});
-
-io.action("run CreateMissingCalendar()", async (cb: any) => {
-	logger.info("Running CreateMissingCalendar()");
-	await createMissingCalendar();
-	return cb({ sucess: true });
-});
-
-io.action("run CreateScheduleCalendar()", async (cb: any) => {
-	logger.info("Running CreateScheduleCalendar()");
-	await createScheduleCalendar();
-	return cb({ sucess: true });
-});
-
-io.action("run CreateAllCalendars()", async (cb: any) => {
-	logger.info("Running CreateAllCalendars()");
-	await createAssignmentCalendar();
-	await createMissingCalendar();
-	await createScheduleCalendar();
-	return cb({ sucess: true });
-});
-
-io.action("Save Assignments", async (cb: any) => {
-	logger.info("Saving Assignments");
-	await fs.writeFile(
-		"./public/assignments.json",
-		JSON.stringify(await readAssignments()) || JSON.stringify({})
-	);
-	return cb({ sucess: true });
 });
 
 // export * from every file
