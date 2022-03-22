@@ -1,6 +1,6 @@
 {
 	"useTabs": true,
-	"endOfLine": "lf",
+	"endOfLine": "crlf",
 	"printWidth": 80,
 	"proseWrap": "preserve",
 	"semi": true,
