@@ -8,3 +8,30 @@ pull_request_rules:
     actions:
       merge:
         method: squash
+
+  - name: Approve when required checks pass
+    conditions:
+       - check-success=build (16.x, ubuntu-latest)
+       - check-success=CodeQL
+       - check-success=Lint PR
+       - -conflict
+    actions:
+        review:
+           type: APPROVE
+           message: All Required Checks Completed
+
+  - name: ask to resolve conflict
+    conditions:
+      - conflict
+    actions:
+        comment:
+          message: This pull request is now in conflicts. Could you fix it @{{author}}? 🙏
+  - name: ask to fix commit message
+    conditions:
+      - check-failure=Lint PR
+      - -closed
+    actions:
+        comment:
+          message: |
+            Title does not follow the guidelines of [Conventional Commits](https://www.conventionalcommits.org).
+            Please adjust title before merge.
