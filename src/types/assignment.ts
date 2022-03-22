@@ -1,3 +1,6 @@
+import { MissingAssignmentDetails } from "./missing";
+import { ScheduleDetails } from "./schedule";
+
 export interface AssignmentDetails {
     AssessmentId:      number;
     AssessmentInd:     boolean;
@@ -28,6 +31,15 @@ export interface AssignmentDetails {
     UserId:            number;
     NewAssessmentInd:  boolean;
 }
+
+export interface AssignmentError {
+    Error: string,
+    ReferenceId: string,
+    ErrorType: string,
+    ErrorId: number
+}
+
+export type AssignmentRequestResult = AssignmentDetails[] | MissingAssignmentDetails[] | ScheduleDetails[] | AssignmentError
 
 export interface AssignmentList {
 	[key: string]: SavedDetails;
