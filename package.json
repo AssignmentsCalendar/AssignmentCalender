@@ -28,7 +28,7 @@
     "ical-generator": "^3.4.0",
     "ics": "^2.35.0",
     "node-cron": "^3.0.0",
-    "node-fetch": "^3.2.2",
+    "node-fetch": "^3.2.3",
     "pino": "^7.9.1",
     "pino-pretty": "^7.5.4",
     "puppeteer": "^13.5.1",
