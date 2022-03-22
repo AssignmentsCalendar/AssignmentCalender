@@ -28,7 +28,7 @@ pull_request_rules:
           message: This pull request is now in conflicts. Could you fix it @{{author}}? 🙏
   - name: ask to fix commit message
     conditions:
-      - check-failure=Lint PR
+      - check-failure=Validate PR title
       - -closed
     actions:
         comment:
