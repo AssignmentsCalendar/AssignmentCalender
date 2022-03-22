@@ -8,11 +8,15 @@ import fs from "fs/promises";
 import {
 	AssignmentDetails,
 	MissingAssignmentDetails,
-	ScheduleDetails
+	ScheduleDetails,
 } from "../index.js";
 import { RequestedList, ScraperStatus } from "../types/scraper.js";
 // @ts-expect-error The module is not typed
 import Cronitor from "cronitor";
+import {
+	AssignmentError,
+	AssignmentRequestResult,
+} from "../types/assignment.js";
 const cronitor = new Cronitor();
 
 dayjs.extend(weekday);
@@ -41,18 +45,25 @@ export class TokenGrabber extends EventEmitter {
 	}
 
 	public async destroy(): Promise<void> {
-		await this.monitor.ping({state: "complete", message: "Token Grabber destroyed"});
-		return;
+		await this.monitor.ping({
+			state: "complete",
+			message: "Token Grabber destroyed",
+		});
 	}
 
-	public async getAssignments(retries = 5): Promise<AssignmentDetails[] | undefined> {
+	public async getAssignments(
+		retries = 5
+	): Promise<AssignmentDetails[] | undefined> {
 		try {
 			this.setStatus("REQUESTING_ASSIGNMENTS");
-			const assignmetns = await this.requestList("ASSIGNMENTS");
+			const assignments = await this.requestList("ASSIGNMENTS");
 			this.setStatus("IDLE");
-			return assignmetns;
+			return assignments as AssignmentDetails[] | undefined;
 		} catch (err) {
-			logger.error(err, "Failed to get assignments, grabbing token again and retrying...");
+			logger.error(
+				err,
+				"Failed to get assignments, grabbing token again and retrying..."
+			);
 
 			if (retries > 0) {
 				await this.getToken();
@@ -64,14 +75,19 @@ export class TokenGrabber extends EventEmitter {
 		}
 	}
 
-	public async getMissing(retries = 5): Promise<MissingAssignmentDetails[] | undefined> {
+	public async getMissing(
+		retries = 5
+	): Promise<MissingAssignmentDetails[] | undefined> {
 		try {
 			this.setStatus("REQUESTING_MISSING");
-			const m = await this.requestList("MISSING");
+			const missingAssignment = await this.requestList("MISSING");
 			this.setStatus("IDLE");
-			return m;
+			return missingAssignment as MissingAssignmentDetails[] | undefined;
 		} catch (err) {
-			logger.error(err, "Failed to get missing assignments, grabbing token again and retrying...");
+			logger.error(
+				err,
+				"Failed to get missing assignments, grabbing token again and retrying..."
+			);
 
 			if (retries > 0) {
 				await this.getToken();
@@ -83,14 +99,19 @@ export class TokenGrabber extends EventEmitter {
 		}
 	}
 
-	public async getSchedule(retries = 5): Promise<ScheduleDetails[] | undefined> {
+	public async getSchedule(
+		retries = 5
+	): Promise<ScheduleDetails[] | undefined> {
 		try {
 			this.setStatus("REQUESTING_SCHEDULE");
-			const s = await this.requestList("SCHEDULE");
+			const schedule = await this.requestList("SCHEDULE");
 			this.setStatus("IDLE");
-			return s;
+			return schedule as ScheduleDetails[] | undefined;
 		} catch (err) {
-			logger.error(err, "Failed to get schedule, grabbing token again and retrying...");
+			logger.error(
+				err,
+				"Failed to get schedule, grabbing token again and retrying..."
+			);
 
 			if (retries > 0) {
 				await this.getToken();
@@ -102,9 +123,11 @@ export class TokenGrabber extends EventEmitter {
 		}
 	}
 
-	public async requestList(type: keyof typeof RequestedList): Promise<any> {
+	public async requestList(
+		type: keyof typeof RequestedList
+	): Promise<AssignmentRequestResult> {
 		// eslint-disable-next-line no-async-promise-executor
-		return new Promise( async (resolve, reject): Promise<void> => {
+		return new Promise(async (resolve, reject): Promise<void> => {
 			try {
 				let url = "";
 
@@ -123,14 +146,16 @@ export class TokenGrabber extends EventEmitter {
 				}
 
 				const response = await fetch(url);
-				const json = (await response.json()) as any;
+				const jsonResult = (await response.json()) as {
+					[key: string]: string | number;
+				};
 
-				if (json.ErrorType) {
-					reject(json);
+				if (jsonResult.ErrorType) {
+					reject(jsonResult as unknown as AssignmentError);
 				}
 
-				resolve(json);
-			} catch (err: any) {
+				resolve(jsonResult as unknown as AssignmentRequestResult);
+			} catch (err: unknown) {
 				reject(err);
 			}
 		});
@@ -182,7 +207,9 @@ export class TokenGrabber extends EventEmitter {
 			// take screenshot of error
 			try {
 				await this.page?.screenshot({
-					path: `./public/errors/error_${dayjs().format("YYYY-MM-DD-HH-MM-SS")}.png`
+					path: `./public/errors/error_${dayjs().format(
+						"YYYY-MM-DD-HH-MM-SS"
+					)}.png`,
 				});
 				await this.browser?.close();
 			} catch (err) {
@@ -204,7 +231,11 @@ export class TokenGrabber extends EventEmitter {
 		// eslint-disable-next-line no-async-promise-executor
 		return new Promise(async (resolve, reject) => {
 			try {
-				this.browser = await puppeteer.launch({ headless: true, handleSIGINT: true, args: ["--use-gl=egl"] });
+				this.browser = await puppeteer.launch({
+					headless: true,
+					handleSIGINT: true,
+					args: ["--use-gl=egl"],
+				});
 				this.page = await this.browser.newPage();
 
 				this.page.setDefaultTimeout(10000000);
@@ -220,7 +251,10 @@ export class TokenGrabber extends EventEmitter {
 				logger.info("Found username input, waiting 1 second");
 				await this.page.waitForTimeout(1000);
 				logger.trace("Wait complete, entering username");
-				await this.page.type("#site-login-input .textfield INPUT", process.env.EMAIL || "");
+				await this.page.type(
+					"#site-login-input .textfield INPUT",
+					process.env.EMAIL || ""
+				);
 				await this.page.click(".btn-primary");
 				logger.info("Username entered and clicked login button");
 				await this.page.waitForNavigation();
@@ -241,12 +275,18 @@ export class TokenGrabber extends EventEmitter {
 				logger.info("Found password input, waiting 1 second");
 				await this.page.waitForTimeout(1000);
 				logger.trace("Wait complete, entering password");
-				await this.page.type("input#password.mCAa0e", process.env.PASSWORD || "");
+				await this.page.type(
+					"input#password.mCAa0e",
+					process.env.PASSWORD || ""
+				);
 				await this.page.click("input#submit.MK9CEd.MVpUfe");
 				logger.info("Password entered and clicked login button");
 
 				let attempts = 0;
-				while (this.page.url() !== `${process.env.BASE_URL}/app/student` || attempts >= 30) {
+				while (
+					this.page.url() !== `${process.env.BASE_URL}/app/student` ||
+					attempts >= 30
+				) {
 					attempts++;
 					await this.page.waitForTimeout(1000);
 				}

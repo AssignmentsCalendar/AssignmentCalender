@@ -13,14 +13,14 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 16.x
-          cache: 'npm'
+          cache: "npm"
       - run: npm ci
       - run: npm run build:release --if-present
-      
+
       - name: Extract version
         id: extract_version
         uses: Saionaro/extract-package-version@v1.1.1
-      
+
       - name: Release
         uses: softprops/action-gh-release@v0.1.14
         with:
