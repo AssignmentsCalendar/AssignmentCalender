@@ -13,9 +13,6 @@ name: "CodeQL"
 
 on:
   push:
-    branches:
-      - main
-      - "v*.*.x"
   pull_request:
     branches:
       - main
@@ -28,11 +25,7 @@ jobs:
     name: Analyze
     strategy:
       fail-fast: false
-      matrix:
-        os: ["ubuntu-latest", "self-hosted"]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
-        # Learn more about CodeQL language support at https://git.io/codeql-language-support
-    runs-on: ${{matrix.os}}
+    runs-on: "ubuntu-latest"
     permissions:
       actions: read
       contents: read
