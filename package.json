@@ -16,7 +16,7 @@
 		"preversion": "npm run build:full && npx typedoc ./src/index.ts --name AssignmentCalender --includeVersion ",
 		"zip": "7z a -tzip dist.zip dist LICENSE .env.example package.json package-lock.json",
 		"generateDatabase": "rimraf C:\\codeql-home\\databases\\AssignmentCalendar && codeql database create --language=javascript --source-root ./src C:\\codeql-home\\databases\\AssignmentCalendar",
-		"format": "prettier --write . && eslint --fix ."
+		"format": "prettier --write . && eslint ./ --fix ."
 	},
 	"keywords": [],
 	"author": "",

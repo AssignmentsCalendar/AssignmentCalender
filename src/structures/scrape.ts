@@ -49,7 +49,6 @@ export class TokenGrabber extends EventEmitter {
 			state: "complete",
 			message: "Token Grabber destroyed",
 		});
-		return;
 	}
 
 	public async getAssignments(

@@ -187,9 +187,6 @@ function generateID(assignment: AssignmentDetails) {
 	const groupName = groupSplit[0];
 	const groupWords = groupName.split(/[. ]/gm);
 
-	console.log(groupName);
-	console.log(groupWords);
-
 	// remove articles like "of", "the" and "and"
 	const articles = ["of", "the", "and", "a", "an"];
 	const filteredWords = groupWords.filter((word) => !articles.includes(word));

@@ -15,6 +15,9 @@
 		"indent": ["error", "tab"],
 		"linebreak-style": ["error", "unix"],
 		"quotes": ["error", "double"],
-		"semi": ["error", "always"]
+		"semi": ["error", "always"],
+		"no-console": "error",
+		"no-useless-return": "error",
+		"camelcase": "warn"
 	}
 }
