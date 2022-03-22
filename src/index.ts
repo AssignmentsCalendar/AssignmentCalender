@@ -22,9 +22,7 @@ dayjs.extend(advancedFormat);
 
 const cronitor = Cronitor();
 
-const calMonitor = new cronitor.Monitor("Create Assignment Calendar");
-const missingMonitor = new cronitor.Monitor("Create Missing Calendar");
-const scheduleMonitor = new cronitor.Monitor("Create Schedule Calendar");
+const calMonitor = new cronitor.Monitor("Create Calendars");
 
 const tokenGrabber = new TokenGrabber();
 
@@ -44,19 +42,15 @@ tokenGrabber.once("ready", async () => {
 		logger.trace("Creating Assignment Calendar");
 		await calMonitor.ping({ state: "run" });
 		await createAssignmentCalendar();
-		await calMonitor.ping({ state: "complete" });
 		logger.trace("Assignment Calendar Created");
 
 		logger.trace("Creating Missing Calendar");
-		await missingMonitor.ping({ state: "run" });
 		await createMissingCalendar();
-		await missingMonitor.ping({ state: "complete" });
 		logger.trace("Missing Calendar Created");
 
 		logger.trace("Creating Schedule Calendar");
-		await scheduleMonitor.ping({ state: "run" });
 		await createScheduleCalendar();
-		await scheduleMonitor.ping({ state: "complete" });
+		await calMonitor.ping({ state: "complete" });
 		logger.trace("Schedule Calendar Created");
 	});
 });
