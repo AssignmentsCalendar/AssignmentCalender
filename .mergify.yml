@@ -13,7 +13,7 @@ pull_request_rules:
     conditions:
        - check-success=build (16.x, ubuntu-latest)
        - check-success=CodeQL
-       - check-success=Lint PR
+       - check-success=Validate PR title
        - -conflict
     actions:
         review:
