@@ -7,7 +7,7 @@ import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import advancedFormat from "dayjs/plugin/advancedFormat.js";
 import dayjs from "dayjs";
-import { AssignmentDetails, AssignmentList} from "./types/assignment.js";
+import { AssignmentDetails, AssignmentList } from "./types/assignment.js";
 import { MissingAssignmentDetails } from "./types/missing.js";
 import { ScheduleDetails } from "./types/schedule.js";
 import cron from "node-cron";
@@ -77,7 +77,7 @@ async function createAssignmentCalendar(): Promise<void> {
 			description: assignment.LongDescription,
 			id: assignment.AssignmentId,
 			start: dayjs(assignment.DateDue).toDate(),
-			allDay: true
+			allDay: true,
 		});
 
 		const id = generateID(assignment);
@@ -88,9 +88,11 @@ async function createAssignmentCalendar(): Promise<void> {
 			name: assignment.Title,
 			type: assignment.AssignmentType,
 			description: assignment.LongDescription,
-			creationDate: dayjs().tz("America/Chicago").format("MM/DD/YYYY hh:mm:ss A z"),
+			creationDate: dayjs()
+				.tz("America/Chicago")
+				.format("MM/DD/YYYY hh:mm:ss A z"),
 			setAssignedDate: assignment.DateAssigned,
-			dueDate: assignment.DateDue
+			dueDate: assignment.DateDue,
 		};
 
 		logger.info(`New Assignment: ${assignment.Title}`);
@@ -118,7 +120,7 @@ async function createMissingCalendar(): Promise<void> {
 			id: assignment.AssignmentId,
 			start: dayjs().toDate(),
 			priority: 9,
-			allDay: true
+			allDay: true,
 		});
 	});
 
@@ -140,7 +142,7 @@ async function createScheduleCalendar(): Promise<void> {
 			start: dayjs(schedule.StartDate).toDate(),
 			end: dayjs(schedule.EndDate).toDate(),
 			allDay: schedule.AllDay,
-			description: `Attendance: ${schedule.AttendanceDesc}`
+			description: `Attendance: ${schedule.AttendanceDesc}`,
 		});
 	});
 
@@ -153,7 +155,10 @@ async function readAssignments() {
 
 	try {
 		j = JSON.parse(
-			await fs.readFile("./public/assignments.json", { encoding: "utf-8", flag: "a+" })
+			await fs.readFile("./public/assignments.json", {
+				encoding: "utf-8",
+				flag: "a+",
+			})
 		);
 	} catch {
 		j = {};

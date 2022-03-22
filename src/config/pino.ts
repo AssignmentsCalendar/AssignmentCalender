@@ -8,7 +8,11 @@ const loggerOptions: P.LoggerOptions = {
 			{
 				level: "trace",
 				target: "pino-pretty",
-				options: { colorize: true, ignore: "pid,hostname", translateTime: "SYS:HH:MM:ss Z" }
+				options: {
+					colorize: true,
+					ignore: "pid,hostname",
+					translateTime: "SYS:HH:MM:ss Z",
+				},
 			},
 			{
 				level: "trace",
@@ -18,8 +22,8 @@ const loggerOptions: P.LoggerOptions = {
 					destination: `public/logs/${dayjs().format("YYYY-MM-DD")}.log`,
 					mkdir: true,
 					singleLine: true,
-					translateTime: "yyyy-mm-dd HH:MM:ss Z"
-				}
+					translateTime: "yyyy-mm-dd HH:MM:ss Z",
+				},
 			},
 			{
 				level: "error",
@@ -28,11 +32,11 @@ const loggerOptions: P.LoggerOptions = {
 					colorize: false,
 					destination: `public/errors/${dayjs().format("YYYY-MM-DD")}.log`,
 					mkdir: true,
-					translateTime: "yyyy-mm-dd HH:MM:ss Z"
-				}
-			}
-		]
-	}
+					translateTime: "yyyy-mm-dd HH:MM:ss Z",
+				},
+			},
+		],
+	},
 };
 
 export const logger = pino(loggerOptions);

@@ -1,13 +1,13 @@
 {
-    "extends": "@tsconfig/node16/tsconfig.json",
+	"extends": "@tsconfig/node16/tsconfig.json",
 
-    "compilerOptions": {
-        "declaration": true,
-        "sourceMap": true,
-        "module": "ES6",
-        "outDir": "./dist",
-        "moduleResolution": "node",
-        "rootDir": "./src",
-        "listEmittedFiles": true,
-    }
+	"compilerOptions": {
+		"declaration": true,
+		"sourceMap": true,
+		"module": "ES6",
+		"outDir": "./dist",
+		"moduleResolution": "node",
+		"rootDir": "./src",
+		"listEmittedFiles": true
+	}
 }

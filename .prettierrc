@@ -1,0 +1,9 @@
+{
+	"useTabs": true,
+	"endOfLine": "lf",
+	"printWidth": 80,
+	"proseWrap": "preserve",
+	"semi": true,
+	"trailingComma": "es5",
+	"singleQuote": false
+}

@@ -2,7 +2,7 @@ import { CalendarType } from "../types/calendar.js";
 import ical, {
 	ICalCalendar,
 	ICalCalendarData,
-	ICalEventData
+	ICalEventData,
 } from "ical-generator";
 import { logger } from "../config/pino.js";
 
@@ -17,7 +17,11 @@ export class Calendar {
 		}
 
 		this.calendar.timezone("America/Chicago");
-		this.calendar.prodId({ company: "Serabus", product: "CalendarExporter", language: "en-US" });
+		this.calendar.prodId({
+			company: "Serabus",
+			product: "CalendarExporter",
+			language: "en-US",
+		});
 		this.calendar.source("https://node2.serabusm.com");
 		this.calendar.scale("GREGORIAN");
 		this.calendar.description("Calendar exported from CORE");
